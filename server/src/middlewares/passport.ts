@@ -12,10 +12,8 @@ export default function appLocalStrategy(passport: any) {
         User.findOne({ username }, (err: any, user: UserInterface) => {
           if (err) throw err;
           if (!user) return done(null, false);
-          console.log(user.password);
-          console.log(user.email);
+
           bcrypt.compare(password, user.password, (err, result) => {
-            console.log(result);
             if (err) throw err;
 
             if (result) {
@@ -36,6 +34,7 @@ export default function appLocalStrategy(passport: any) {
     User.findOne({ _id: id }, (err: any, user: UserInterface) => {
       const userInformation = {
         username: user.username,
+        id: user.id,
       };
       done(err, userInformation);
     });

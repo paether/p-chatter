@@ -3,6 +3,7 @@ import axios from "axios";
 import "./App.css";
 
 function App() {
+  const [user, setUser] = useState({});
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -18,7 +19,8 @@ function App() {
         withCredentials: true,
         url: "http://localhost:8800/api/auth/register",
       });
-      console.log(resp);
+      setUser(resp.data);
+      console.log(resp.data);
     } catch (error) {
       console.log(error);
     }
@@ -33,6 +35,23 @@ function App() {
         },
         withCredentials: true,
         url: "http://localhost:8800/api/auth/login",
+      });
+      setUser(resp.data);
+      console.log(resp.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const updatePass = async () => {
+    try {
+      const resp = await axios({
+        method: "put",
+        data: {
+          password,
+          id: user,
+        },
+        withCredentials: true,
+        url: "http://localhost:8800/api/users/" + user,
       });
       console.log(resp);
     } catch (error) {
@@ -79,8 +98,7 @@ function App() {
         <button onClick={login}>submit</button>
       </div>
       <div>
-        <h1>get user</h1>
-        <button>submit</button>
+        <button onClick={updatePass}>update pw</button>
       </div>
     </>
   );

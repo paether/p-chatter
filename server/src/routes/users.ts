@@ -1,13 +1,16 @@
 import express from "express";
+const usersController = require("../controllers/usersController");
+
 const router = express.Router();
-import { Request, Response } from "express";
 
-router.get("/", (req: Request, res: Response) => {
-  res.send("test");
-});
+router.put("/:id", usersController.put_id_password);
 
-router.get("/user", (req, res) => {
-  res.send(req.user);
-});
+// router.get("/", (req: Request, res: Response) => {
+//   res.send("test");
+// });
+
+// router.get("/user", (req, res) => {
+//   res.send(req.user);
+// });
 
 export default router;
