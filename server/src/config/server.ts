@@ -3,8 +3,8 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import passport from "passport";
 import helmet from "helmet";
-
 import cors from "cors";
+
 const server = express();
 
 server.use(helmet());

@@ -1,9 +1,23 @@
-import User from "../models/User";
 import bcrypt from "bcrypt";
 import passportLocal from "passport-local";
+import { NextFunction, Request, Response } from "express";
+
+import User from "../models/User";
 import UserInterface from "src/interfaces/userInterface";
 
 const localStrategy = passportLocal.Strategy;
+
+export function checkAuthentication(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    res.status(401).json("unauthorized");
+  }
+}
 
 export default function appLocalStrategy(passport: any) {
   try {
@@ -15,7 +29,6 @@ export default function appLocalStrategy(passport: any) {
 
           bcrypt.compare(password, user.password, (err, result) => {
             if (err) throw err;
-
             if (result) {
               return done(null, user);
             }
