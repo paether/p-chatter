@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
   baseURL: "http://localhost:8800/api",
   withCredentials: true,
 });
@@ -18,7 +18,6 @@ const throwError = (errorType: string, error: any) => {
     statusText: error.data,
     status: error.status,
   };
-
   throw errorData.data;
 };
 

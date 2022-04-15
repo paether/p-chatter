@@ -22,3 +22,46 @@ html {
     justify-content: center;
     align-items: center;
 }
+.loading-ring {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.loading-ring div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    margin: 8px;
+    border: 8px solid rgb(0, 0, 0);
+    border-radius: 50%;
+    animation: loading-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: rgb(5, 5, 5) transparent transparent transparent;
+}
+
+.loading-ring div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.loading-ring div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.loading-ring div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes loading-ring {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

@@ -47,4 +47,13 @@ const post_register = async (req: Request, res: Response) => {
     return console.log(error);
   }
 };
-module.exports = { post_login, post_register };
+
+const get_isloggedin = (req: Request, res: Response) => {
+  if (req.isAuthenticated()) {
+    return res.json(req.user);
+  } else {
+    return res.json(false);
+  }
+};
+
+module.exports = { post_login, post_register, get_isloggedin };

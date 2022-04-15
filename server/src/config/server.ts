@@ -15,7 +15,7 @@ server.use(
   session({
     secret: "r8q,+&1LM3)CD*zAGpx1xm{NeQ",
     resave: true,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { maxAge: 60 * 60 * 10000 },
   })
 );

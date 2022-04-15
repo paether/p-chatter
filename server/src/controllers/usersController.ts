@@ -83,6 +83,32 @@ const delete_remove_friend = async (
   }
 };
 
-module.exports = { put_id_password, put_add_friend, delete_remove_friend };
+const get_friends = () => async (req: UserInterfaceRequest, res: Response) => {
+  if (req.user.id !== req.params.id) {
+    return res
+      .status(401)
+      .json("Logged in user and requested user does not match");
+  }
 
-// $2b$10$ / avs6TbOTpEKC0YoEdhhXe / zZiENNVSHmHNfVqqBbEQxiw0UEfNdO;
+  try {
+    const user = await User.findById({ _id: req.user.id });
+    const friends = await Promise.all(
+      user.friends.map((friendId: string) => User.findById(friendId))
+    );
+    let friendsFiltered: Array<{ _id: string; username: string }> = [];
+    friends.map((friend) => {
+      const { _id, username } = friend;
+      friendsFiltered.push({ _id, username });
+    });
+    return res.json(friendsFiltered);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
+module.exports = {
+  put_id_password,
+  put_add_friend,
+  delete_remove_friend,
+  get_friends,
+};

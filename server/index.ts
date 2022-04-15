@@ -9,9 +9,9 @@ import usersRouter from "./src/routes/users";
 import authRouter from "./src/routes/auth";
 
 const PORT = getConfig().PORT;
+appLocalStrategy(passport);
 server.use("/api/users", usersRouter);
 server.use("/api/auth", authRouter);
-appLocalStrategy(passport);
 
 server
   .listen(PORT)
@@ -25,4 +25,4 @@ server
     initDb();
   });
 
-module.exports = { server };
+module.exports = server;

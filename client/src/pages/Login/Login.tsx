@@ -1,15 +1,17 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import "./LoginPage.css";
+import "./Login.css";
 import { loginCall, registerCall } from "../../api";
+import { useNavigate } from "react-router-dom";
 import { actionType } from "../../context/AuthReducer";
 
-export const LoginPage: React.FC = () => {
+export const Login: React.FC = () => {
   const { state, dispatch } = useContext(AuthContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const buttonContainer = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const handleButtonTypeHelper = (
     btnElement: HTMLElement,
@@ -40,11 +42,13 @@ export const LoginPage: React.FC = () => {
       if (isLogin) {
         dispatch({ type: "LOGIN_START" });
         const resp = await loginCall(username, password);
-        dispatch({ type: "LOGIN_SUCCESS", payload: resp! });
+        dispatch({ type: "LOGIN_SUCCESS", payload: resp });
+        localStorage.setItem("user", resp);
       } else {
         dispatch({ type: "REGISTER_START" });
         const resp = await registerCall(username, password);
-        dispatch({ type: "REGISTER_SUCCESS", payload: resp! });
+        dispatch({ type: "REGISTER_SUCCESS", payload: resp });
+        localStorage.setItem("user", resp);
       }
     } catch (error: any) {
       if (isLogin) {
@@ -83,6 +87,7 @@ export const LoginPage: React.FC = () => {
         handleLoginRegisterButton(e);
       }}
     >
+      <button onClick={() => navigate("/chat")}>chat</button>
       <label htmlFor="username">Username</label>
       <input
         onChange={(e) => setUsername(e.target.value)}
