@@ -87,7 +87,6 @@ export const Login: React.FC = () => {
         handleLoginRegisterButton(e);
       }}
     >
-      <button onClick={() => navigate("/chat")}>chat</button>
       <label htmlFor="username">Username</label>
       <input
         onChange={(e) => setUsername(e.target.value)}

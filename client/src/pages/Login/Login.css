@@ -14,20 +14,18 @@ form {
 }
 
 
-form * {
-    color: #ffffff;
-    outline: none;
-    border: none;
-}
-label {
+form > label {
     align-self: flex-start;
     display: block;
     margin-top: 2rem;
     font-size: 1rem;
     font-weight: 500;
 }
+label[for="username"]{
+    margin-top: 0;
+}
 
-input {
+form > input {
     box-sizing: border-box;
     display: block;
     width: 100%;
@@ -81,7 +79,7 @@ input {
     transform-style: preserve-3d;
 }
 
-button {
+.button-container > button {
     margin-top: 2rem;
     text-align: center;
     width: 100%;

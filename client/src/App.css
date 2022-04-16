@@ -12,8 +12,9 @@ html {
     box-sizing: border-box;
     margin: 0;
     padding:0;
-    font-family: "Red Hat Display",
-    sans-serif;
+    font-family: "Red Hat Display",sans-serif;
+    outline: none;
+    border: none;
 }
 #app {
     min-height: 100vh;
