@@ -45,7 +45,6 @@ const put_add_friend = async (req: UserInterfaceRequest, res: Response) => {
         return res.status(403).json("Already a friend");
       }
     } catch (error) {
-      console.log(error);
       return res.status(500).json(error);
     }
   }

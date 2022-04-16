@@ -7,11 +7,13 @@ import initDb from "./src/config/database";
 import appLocalStrategy from "./src/middlewares/passport";
 import usersRouter from "./src/routes/users";
 import authRouter from "./src/routes/auth";
+import chatRouter from "./src/routes/chat";
 
 const PORT = getConfig().PORT;
 appLocalStrategy(passport);
 server.use("/api/users", usersRouter);
 server.use("/api/auth", authRouter);
+server.use("/api/chat", chatRouter);
 
 server
   .listen(PORT)
