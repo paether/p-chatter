@@ -2,22 +2,18 @@ import React, { createContext, useReducer } from "react";
 import { AuthReducer, actionType } from "./AuthReducer";
 
 const initialState = {
-  user: null,
+  user: "",
   isFetching: false,
   error: null,
 };
 
-interface initialStateInterface {
-  user: {} | null;
-  isFetching: boolean;
-  error: any;
-}
+export type AuthState = typeof initialState;
 interface Props {
   children: JSX.Element;
 }
 
 export const AuthContext = createContext<{
-  state: initialStateInterface;
+  state: AuthState;
   dispatch: React.Dispatch<actionType>;
 }>({
   state: initialState,

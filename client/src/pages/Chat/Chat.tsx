@@ -2,33 +2,30 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faCircle } from "@fortawesome/free-solid-svg-icons";
+
+import { AuthContext } from "../../context/AuthContext";
+import Conversation from "./Conversation/Conversation";
+import { axiosInstance } from "../../api";
 import { Message } from "./Message";
 import "./Chat.css";
 
 export const Chat = () => {
   const navigate = useNavigate();
+  const [conversations, setConversations] = useState([]);
+
+  const { state, dispatch } = useContext(AuthContext);
+
+  useEffect(() => {
+    const getConversations = async () => {
+      try {
+        const resp = await axiosInstance.get("/chat");
+        setConversations(resp.data);
+      } catch (error) {}
+    };
+    getConversations();
+  }, [state.user]);
 
   // dinamikusan profile kep es adatok toltese, map hasznalataval?
-  const Person: React.FC<{ name: string; status: string }> = ({
-    name,
-    status,
-  }) => {
-    return (
-      <li className="person">
-        <img
-          src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"
-          alt="avatar"
-        />
-        <div className="about">
-          <div className="name">{name}</div>
-          <div className="status">
-            <FontAwesomeIcon className={status} icon={faCircle} />
-            {status}
-          </div>
-        </div>
-      </li>
-    );
-  };
 
   return (
     <div className="container">
@@ -40,12 +37,15 @@ export const Chat = () => {
           </div>
         </div>
         <ul className="people-list">
-          <Person {...{ name: "test name", status: "online" }} />
-          <Person {...{ name: "test nadsdsdsme", status: "online" }} />
-          <Person {...{ name: "test name", status: "online" }} />
-          <Person
-            {...{ name: "test naaasdsdsdsdsaaaaame", status: "online" }}
-          />
+          {conversations.map((conversation) => {
+            return (
+              <Conversation
+                key={state.user}
+                conversation={conversation}
+                userId={state.user}
+              />
+            );
+          })}
         </ul>
       </div>
 

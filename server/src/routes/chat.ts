@@ -16,7 +16,7 @@ router.post(
 );
 //get all conversation for user
 router.get(
-  "/user/:id",
+  "/",
   checkAuthentication,
   conversationController.get_all_conversation
 );
@@ -30,5 +30,12 @@ router.get(
 //    ----Messages-----
 
 //add new message
-router.post("/:id", checkAuthentication, messageController.add_message);
+router.post(
+  "/:id/messages",
+  checkAuthentication,
+  messageController.post_add_message
+);
+
+//get all message for a specific conversation
+router.get("/:id/messages");
 export default router;

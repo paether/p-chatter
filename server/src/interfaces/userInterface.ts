@@ -1,19 +1,6 @@
 import { Request } from "express";
-
-export default interface UserInterfaceRequest extends Request {
+export default interface IReqUser extends Request {
   user: {
-    username: string;
-    password: string;
-    picture?: string;
-    friends?: Array<string>;
-    id?: string;
+    id: string;
   };
-}
-
-export default interface UserInterface {
-  username: string;
-  password: string;
-  picture?: string;
-  friends?: Array<string>;
-  id?: string;
 }

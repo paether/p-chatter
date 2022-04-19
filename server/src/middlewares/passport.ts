@@ -3,7 +3,7 @@ import passportLocal from "passport-local";
 import { NextFunction, Request, Response } from "express";
 
 import User from "../models/User";
-import UserInterface from "src/interfaces/userInterface";
+import { IUser } from "../models/User";
 
 const localStrategy = passportLocal.Strategy;
 
@@ -23,7 +23,7 @@ export default function appLocalStrategy(passport: any) {
   try {
     passport.use(
       new localStrategy((username: string, password: string, done: any) => {
-        User.findOne({ username }, (err: any, user: UserInterface) => {
+        User.findOne({ username }, (err: any, user: IUser) => {
           if (err) throw err;
           if (!user) return done(null, false);
 
@@ -44,7 +44,7 @@ export default function appLocalStrategy(passport: any) {
     done(null, user.id);
   });
   passport.deserializeUser((id: string, done: any) => {
-    User.findOne({ _id: id }, (err: any, user: UserInterface) => {
+    User.findOne({ _id: id }, (err: any, user: IUser) => {
       const userInformation = {
         username: user.username,
         id: user.id,

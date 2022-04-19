@@ -1,3 +1,5 @@
+import { AuthState } from "./AuthContext";
+
 export type actionType =
   | { type: "REGISTER_START" }
   | { type: "REGISTER_SUCCESS"; payload: string }
@@ -7,49 +9,55 @@ export type actionType =
   | { type: "LOGIN_ERROR"; payload: any };
 
 interface initialStateInterface {
-  user: {} | null;
+  user: string;
   isFetching: boolean;
   error: any;
 }
 
 export const AuthReducer = (
-  state: initialStateInterface,
+  state: AuthState,
   action: actionType
-) => {
+): AuthState => {
   switch (action.type) {
     case "REGISTER_START":
       return {
-        user: null,
+        ...state,
+        user: "",
         isFetching: true,
-        error: false,
+        error: null,
       };
     case "REGISTER_SUCCESS":
       return {
+        ...state,
         user: action.payload,
         isFetching: false,
-        error: false,
+        error: null,
       };
     case "REGISTER_ERROR":
       return {
-        user: null,
+        ...state,
+        user: "",
         isFetching: false,
         error: action.payload,
       };
     case "LOGIN_START":
       return {
-        user: null,
+        ...state,
+        user: "",
         isFetching: true,
-        error: false,
+        error: null,
       };
     case "LOGIN_SUCCESS":
       return {
+        ...state,
         user: action.payload,
         isFetching: false,
-        error: false,
+        error: null,
       };
     case "LOGIN_ERROR":
       return {
-        user: null,
+        ...state,
+        user: "",
         isFetching: false,
         error: action.payload,
       };

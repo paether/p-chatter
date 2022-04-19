@@ -1,19 +1,11 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import Conversation from "../../models/Conversation";
-import User from "../../models/User";
+import IReqUser from "../../interfaces/userInterface";
+
 import verifyMongoIds from "../../middlewares/helpers";
+import User from "../../models/User";
 
-interface ConversationInterface {
-  members: [string, string];
-}
-
-interface userIdInterface extends Request {
-  user: {
-    id: string;
-  };
-}
-
-const post_new_conversation = async (req: userIdInterface, res: Response) => {
+const post_new_conversation = async (req: IReqUser, res: Response) => {
   const validIds = verifyMongoIds([
     req.user.id,
     req.body.senderId,
@@ -40,7 +32,7 @@ const post_new_conversation = async (req: userIdInterface, res: Response) => {
     if (exists) {
       return res.status(400).json("This conversation already exists");
     }
-    const newConv = new Conversation<ConversationInterface>({
+    const newConv = new Conversation({
       members: [req.body.senderId, req.body.receiverId],
     });
     const createdConv = await newConv.save();
@@ -51,12 +43,9 @@ const post_new_conversation = async (req: userIdInterface, res: Response) => {
   }
 };
 
-const get_all_conversation = async (req: userIdInterface, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id, req.body.userId]);
+const get_all_conversation = async (req: IReqUser, res: Response) => {
+  const validIds = verifyMongoIds([req.user.id]);
   if (!validIds) return res.status(400).json("Invalid values");
-
-  if (req.user.id === req.body.userId)
-    return res.status(401).json("Unauthorized");
   try {
     const conv = await Conversation.find({
       members: { $in: [req.user.id] },
@@ -67,16 +56,10 @@ const get_all_conversation = async (req: userIdInterface, res: Response) => {
   }
 };
 
-const get_conversation = async (req: userIdInterface, res: Response) => {
-  const validIds = verifyMongoIds([
-    req.user.id,
-    req.body.conversationId,
-    req.body.userId,
-  ]);
+const get_conversation = async (req: IReqUser, res: Response) => {
+  const validIds = verifyMongoIds([req.user.id, req.body.conversationId]);
   if (!validIds) return res.status(400).json("Invalid values");
 
-  if (req.user.id === req.body.userId)
-    return res.status(401).json("Unauthorized");
   try {
     const conv = await Conversation.findOne({
       _id: req.body.conversationId,

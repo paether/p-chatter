@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import passport from "passport";
 import bcrypt from "bcrypt";
 
-import UserInterface from "../interfaces/userInterface";
+import { IUser } from "../models/User";
 import User from "../models/User";
 
 const post_login = (req: Request, res: Response, next: NextFunction) => {
@@ -32,7 +32,7 @@ const post_register = async (req: Request, res: Response) => {
     return res.status(400).json("invalid values");
   }
   try {
-    User.findOne({ username }, async (err: Error, doc: UserInterface) => {
+    User.findOne({ username }, async (err: Error, doc: IUser) => {
       if (err) throw err;
       if (doc) return res.status(400).json("Already existing user");
       const hashedPass = await bcrypt.hash(password, 10);

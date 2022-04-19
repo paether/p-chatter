@@ -1,32 +1,15 @@
 /* eslint-disable no-unreachable */
 
-import { Response, Request } from "express";
+import { Response } from "express";
 import Conversation from "../../models/Conversation";
 import Message from "../../models/Message";
 import verifyMongoIds from "../../middlewares/helpers";
+import IReqUser from "../../interfaces/userInterface";
 
-interface MessageInterface {
-  conversationId: string;
-  senderId: string;
-  text: string;
-}
-
-interface userIdInterface extends Request {
-  user: {
-    id: string;
-  };
-}
-
-const add_message = async (req: userIdInterface, res: Response) => {
-  const validIds = verifyMongoIds([
-    req.user.id,
-    req.body.senderId,
-    req.body.conversationId,
-  ]);
+const post_add_message = async (req: IReqUser, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id!, req.body.conversationId]);
   if (!validIds) return res.status(400).json("Invalid values");
 
-  if (req.user.id !== req.body.senderId)
-    return res.status(401).json("Unauthorized");
   try {
     const conv = await Conversation.findOne({
       _id: req.body.conversationId,
@@ -35,9 +18,9 @@ const add_message = async (req: userIdInterface, res: Response) => {
     if (!conv) {
       return res.status(400).json("Cannot get that conversation");
     }
-    const message = new Message<MessageInterface>({
+    const message = new Message({
       conversationId: req.body.conversationId,
-      senderId: req.body.senderId,
+      senderId: req.user.id,
       text: req.body.text,
     });
     const savedMessage = await message.save();
@@ -46,7 +29,21 @@ const add_message = async (req: userIdInterface, res: Response) => {
     return res.status(500).json(error);
   }
 };
+const get_messages = async (req: IReqUser, res: Response) => {
+  const validIds = verifyMongoIds([req.user.id, req.body.conversationId]);
+  if (!validIds) return res.status(400).json("Invalid values");
+
+  try {
+    const messages = await Message.find({
+      conversationId: req.body.coonversationId,
+    });
+    return res.json(messages);
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
 
 module.exports = {
-  add_message,
+  post_add_message,
+  get_messages,
 };
