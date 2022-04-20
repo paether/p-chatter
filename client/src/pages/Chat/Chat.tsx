@@ -1,8 +1,14 @@
-import React, { useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faCircle } from "@fortawesome/free-solid-svg-icons";
-
+import { io } from "socket.io-client";
 import { AuthContext } from "../../context/AuthContext";
 import Conversation from "./Conversation/Conversation";
 import { IFriend } from "./Conversation";
@@ -22,10 +28,12 @@ interface IMessage {
   text: string;
   createdAt: any;
 }
+const socket = io("http://localhost:8800");
 
 export const Chat = () => {
   const navigate = useNavigate();
   const { state, dispatch } = useContext(AuthContext);
+  const messageRef = useRef<HTMLDivElement>(null);
 
   const [conversations, setConversations] = useState<IConversation[] | null>(
     null
@@ -37,6 +45,17 @@ export const Chat = () => {
     null
   );
   const [newMessage, setNewMessage] = useState<string>("");
+  const [socket, setSocket] = useState<typeof io | null>(null);
+
+  useEffect(() => {
+    const socket = io("http://localhost:8800");
+    socket.emit("new user", state.user);
+    //setSocket(socket);
+
+    // return () => {
+    //   socket.close();
+    // };
+  }, []);
 
   const handleSendNewMessage = async () => {
     if (!currentConversation) return;
@@ -80,6 +99,11 @@ export const Chat = () => {
   useEffect(() => {
     getMessages();
   }, [currentConversation, getMessages]);
+
+  useEffect(() => {
+    if (!messageRef.current) return;
+    messageRef.current.scrollIntoView();
+  }, [messages]);
 
   return (
     <div className="container">
@@ -127,13 +151,15 @@ export const Chat = () => {
               {currentConversation ? (
                 messages.map((msg) => {
                   return (
-                    <Message
-                      isRight={msg.senderId === state.user}
-                      message={msg.text}
-                      name={currentChatPartner!.username}
-                      time={msg.createdAt}
-                      key={msg._id}
-                    />
+                    <div className="message-container" ref={messageRef}>
+                      <Message
+                        isRight={msg.senderId === state.user}
+                        message={msg.text}
+                        name={currentChatPartner!.username}
+                        time={msg.createdAt}
+                        key={msg._id}
+                      />
+                    </div>
                   );
                 })
               ) : (

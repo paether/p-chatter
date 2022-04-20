@@ -19,6 +19,7 @@ import "./App.css";
 function App() {
   const { state, dispatch } = useContext(AuthContext);
   const [isLoading, setIsloading] = useState(true);
+  console.log(state.user);
 
   const checkAuth = async () => {
     try {
