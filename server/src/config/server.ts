@@ -3,15 +3,17 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import passport from "passport";
 import helmet from "helmet";
+import http from "http";
 import cors from "cors";
 
-const server = express();
+const app = express();
+const server = http.createServer(app);
 
-server.use(helmet());
-server.use(cors({ origin: "http://localhost:3000", credentials: true }));
-server.use(express.json());
-server.use(express.urlencoded({ extended: true }));
-server.use(
+app.use(helmet());
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(
   session({
     secret: "r8q,+&1LM3)CD*zAGpx1xm{NeQ",
     resave: true,
@@ -19,8 +21,8 @@ server.use(
     cookie: { maxAge: 60 * 60 * 10000 },
   })
 );
-server.use(cookieParser("r8q,+&1LM3)CD*zAGpx1xm{NeQ"));
-server.use(passport.initialize());
-server.use(passport.session());
+app.use(cookieParser("r8q,+&1LM3)CD*zAGpx1xm{NeQ"));
+app.use(passport.initialize());
+app.use(passport.session());
 
-export default server;
+export { server, app };

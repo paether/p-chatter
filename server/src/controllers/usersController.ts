@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 
 import IReqUser from "../interfaces/userInterface";
 import User from "../models/User";
+import { IUser } from "../models/User";
 import Conversation from "../models/Conversation";
 import verifyMongoIds from "../middlewares/helpers";
 
@@ -90,12 +91,17 @@ const get_friends = async (req: IReqUser, res: Response) => {
 
   try {
     const user = await User.findById({ _id: req.user.id });
-    const friends = await Promise.all(
-      user!.friends.map((friendId: string) => User.findById(friendId))
+    if (!user) {
+      return res.status(400);
+    }
+    const friends: (IUser | null)[] = await Promise.all(
+      user.friends.map((friendId: string) => User.findById(friendId))
     );
+
     let friendsFiltered: Array<{ _id: string; username: string }> = [];
-    friends.map((friend: any) => {
-      const { _id, username } = friend;
+    friends.map((friend) => {
+      // if (!friend) return;
+      const { _id, username } = friend!;
       friendsFiltered.push({ _id, username });
     });
     return res.json(friendsFiltered);
@@ -124,16 +130,15 @@ interface ISpecUserId extends IReqUser {
 }
 
 const get_specific_user = async (req: ISpecUserId, res: Response) => {
-  console.log(req.query.specUserId);
-
   const validIds = verifyMongoIds([req.user.id, req.query.specUserId]);
   if (!validIds) return res.status(400).json("Invalid values");
   try {
     const user = await User.findById(req.query.specUserId);
-    // eslint-disable-next-line no-unused-vars
-
-    // const { password, ...info }: IUser | null = user.data;
-    return res.json(user);
+    if (!user) {
+      return res.status(400);
+    }
+    const { _id, username, picture } = user;
+    return res.json({ _id, username, picture });
   } catch (error) {
     return res.status(500).json(error);
   }

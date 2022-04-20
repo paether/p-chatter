@@ -37,5 +37,9 @@ router.post(
 );
 
 //get all message for a specific conversation
-router.get("/:id/messages");
+router.get(
+  "/:id/messages",
+  checkAuthentication,
+  messageController.get_messages
+);
 export default router;
