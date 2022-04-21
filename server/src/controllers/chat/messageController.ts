@@ -3,7 +3,7 @@
 import { Response } from "express";
 import Conversation from "../../models/Conversation";
 import Message from "../../models/Message";
-import verifyMongoIds from "../../middlewares/helpers";
+import { verifyMongoIds } from "../../utils/helpers";
 import IReqUser from "../../interfaces/userInterface";
 
 const post_add_message = async (req: IReqUser, res: Response) => {
@@ -24,7 +24,7 @@ const post_add_message = async (req: IReqUser, res: Response) => {
       text: req.body.text,
     });
     const savedMessage = await message.save();
-    return res.json(savedMessage.id);
+    return res.json(savedMessage);
   } catch (error) {
     return res.status(500).json(error);
   }

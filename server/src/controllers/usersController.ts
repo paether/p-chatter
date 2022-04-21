@@ -5,7 +5,18 @@ import IReqUser from "../interfaces/userInterface";
 import User from "../models/User";
 import { IUser } from "../models/User";
 import Conversation from "../models/Conversation";
-import verifyMongoIds from "../middlewares/helpers";
+import { verifyMongoIds } from "../utils/helpers";
+
+interface ISpecUserId extends IReqUser {
+  query: {
+    specUserId: string;
+  };
+}
+interface IRegexUser extends IReqUser {
+  query: {
+    username: string;
+  };
+}
 
 const put_id_password = async (req: IReqUser, res: Response) => {
   if (req.body.password) {
@@ -123,22 +134,39 @@ const get_all_conversation = async (req: IReqUser, res: Response) => {
   }
 };
 
-interface ISpecUserId extends IReqUser {
-  query: {
-    specUserId: string;
-  };
-}
-
 const get_specific_user = async (req: ISpecUserId, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id, req.query.specUserId]);
+  const validIds = verifyMongoIds([req.user.id, req.params.id]);
   if (!validIds) return res.status(400).json("Invalid values");
   try {
-    const user = await User.findById(req.query.specUserId);
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(400);
     }
     const { _id, username, picture } = user;
     return res.json({ _id, username, picture });
+  } catch (error) {
+    return res.status(500).json(error);
+  }
+};
+
+const get_users = async (req: IRegexUser, res: Response) => {
+  const validIds = verifyMongoIds([req.user.id]);
+  if (!validIds) return res.status(400).json("Invalid values");
+  try {
+    const users = await User.find({
+      username: { $regex: req.query.username, $options: "i" },
+    });
+    if (!users) {
+      return res.status(400);
+    }
+    if (users.length === 0) {
+      return res.json([]);
+    }
+
+    const destructedUsers = users.map(({ _id, username, picture }) => {
+      return { _id, username, picture };
+    });
+    return res.json(destructedUsers);
   } catch (error) {
     return res.status(500).json(error);
   }
@@ -150,4 +178,5 @@ module.exports = {
   delete_remove_friend,
   get_friends,
   get_specific_user,
+  get_users,
 };

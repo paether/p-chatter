@@ -8,7 +8,7 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faCircle } from "@fortawesome/free-solid-svg-icons";
-import { io } from "socket.io-client";
+import { Socket } from "socket.io-client";
 import { AuthContext } from "../../context/AuthContext";
 import Conversation from "./Conversation/Conversation";
 import { IFriend } from "./Conversation";
@@ -17,22 +17,20 @@ import { Message } from "./Message";
 import "./Chat.css";
 
 interface IConversation {
-  members: [];
+  members: string[];
   _id: string;
 }
 
 interface IMessage {
   _id: string;
-  conversationId: string;
+  conversationId?: string;
   senderId: string;
   text: string;
   createdAt: any;
 }
-const socket = io("http://localhost:8800");
 
-export const Chat = () => {
-  const navigate = useNavigate();
-  const { state, dispatch } = useContext(AuthContext);
+export const Chat = ({ socket }: { socket: Socket | null }) => {
+  const { state } = useContext(AuthContext);
   const messageRef = useRef<HTMLDivElement>(null);
 
   const [conversations, setConversations] = useState<IConversation[] | null>(
@@ -45,29 +43,57 @@ export const Chat = () => {
     null
   );
   const [newMessage, setNewMessage] = useState<string>("");
-  const [socket, setSocket] = useState<typeof io | null>(null);
+  const [userFilter, setUserFilter] = useState("");
+
+  // const [sockt, setSocket] = useState<typeof io | null>(null);
 
   useEffect(() => {
-    const socket = io("http://localhost:8800");
-    socket.emit("new user", state.user);
-    //setSocket(socket);
-
-    // return () => {
-    //   socket.close();
-    // };
+    if (!socket) {
+      return;
+    }
+    socket.emit("newUser", state.user);
+    socket.on("getMessage", (message) => {
+      if (currentConversation?.members.includes(message.senderId)) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            _id: message.messageId,
+            senderId: message.senderId,
+            text: message.text,
+            createdAt: Date.now(),
+          },
+        ]);
+      }
+    });
   }, []);
 
-  const handleSendNewMessage = async () => {
+  const handleSendNewMessage = useCallback(async () => {
     if (!currentConversation) return;
     try {
-      await axiosInstance.post(`chat/${currentConversation._id!}/messages`, {
+      const resp = await axiosInstance.post(
+        `chat/${currentConversation._id!}/messages`,
+        {
+          text: newMessage,
+        }
+      );
+
+      const receiverId = currentConversation.members.find(
+        (member) => member !== state.user
+      );
+      console.log("sent");
+
+      socket?.emit("sendMessage", {
+        senderId: state.user,
+        receiverId,
+        messageId: resp.data._id,
         text: newMessage,
       });
+      setMessages((prev) => [...prev, resp.data]);
       setNewMessage("");
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [currentConversation, newMessage, socket, state.user]);
 
   const getConversations = useCallback(async () => {
     try {
@@ -85,9 +111,8 @@ export const Chat = () => {
       const resp = await axiosInstance.get(
         `/chat/${currentConversation._id}/messages`
       );
-      setMessages(resp.data);
 
-      console.log("messages", resp.data);
+      setMessages(resp.data);
     } catch (error) {
       console.log(error);
     }
@@ -102,15 +127,43 @@ export const Chat = () => {
 
   useEffect(() => {
     if (!messageRef.current) return;
-    messageRef.current.scrollIntoView();
+    messageRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const findUsers = async () => {
+    let test = "pet";
+  };
+
+  useEffect(() => {
+    let filterTimeout = setTimeout(async () => {
+      console.log("filtering");
+      try {
+        const resp = await axiosInstance.get("/users", {
+          params: {
+            username: userFilter,
+          },
+        });
+        console.log(resp);
+      } catch (error) {
+        console.log(error);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(filterTimeout);
+    };
+  }, [userFilter]);
 
   return (
     <div className="container">
       <div className="people-list-container" id="people-list">
         <div className="search">
           <div className="search-container">
-            <input type="text" placeholder="search" />
+            <input
+              type="text"
+              placeholder="search"
+              onChange={(e) => setUserFilter(e.target.value)}
+            />
             <FontAwesomeIcon icon={faSearch} />
           </div>
         </div>
@@ -151,13 +204,20 @@ export const Chat = () => {
               {currentConversation ? (
                 messages.map((msg) => {
                   return (
-                    <div className="message-container" ref={messageRef}>
+                    <div
+                      key={msg._id}
+                      className="message-container"
+                      ref={messageRef}
+                    >
                       <Message
                         isRight={msg.senderId === state.user}
                         message={msg.text}
-                        name={currentChatPartner!.username}
+                        name={
+                          msg.senderId === state.user
+                            ? "me"
+                            : currentChatPartner!.username
+                        }
                         time={msg.createdAt}
-                        key={msg._id}
                       />
                     </div>
                   );

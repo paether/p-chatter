@@ -2,7 +2,12 @@ if (process.env.NODE_ENV !== "production") require("dotenv").config();
 import passport from "passport";
 
 import getConfig from "./src/config/config";
-import { server, app, io, sessionMiddleware } from "./src/config/server";
+import { server, app, io } from "./src/config/server";
+import {
+  addSocketUser,
+  removeSocketUser,
+  getSocketUser,
+} from "./src/utils/helpers";
 import initDb from "./src/config/database";
 import appLocalStrategy from "./src/middlewares/passport";
 import usersRouter from "./src/routes/users";
@@ -21,45 +26,45 @@ interface ISocketUser {
   socketId: string;
 }
 
+interface ISendMessage {
+  senderId: string;
+  receiverId: string;
+  messageId: string;
+  text: string;
+}
+
 let socketUsers: ISocketUser[] = [];
+console.log(socketUsers);
 
-const addSocketUser = (userId: string, socketId: string) => {
-  if (socketUsers.some((user) => user.userId === userId)) return;
-  socketUsers.push({ userId, socketId });
-};
-
-const removeSocketUser = (userId: string) => {
-  socketUsers = socketUsers.filter((user) => user.userId !== userId);
-};
-
-const wrap = (middleware: any) => (socket: any, next: any) =>
-  middleware(socket.request, {}, next);
-
-io.use(wrap(sessionMiddleware));
-io.use(wrap(passport.initialize()));
-io.use(wrap(passport.session()));
-
-io.use((socket: any, next) => {
-  console.log(socket.request.user);
-  console.log(socket.request.isAuthenticated());
-  if (socket.request.user) {
-    next();
-  } else {
-    next(new Error("unauthorized"));
-  }
-});
-
-io.on("connection", (socket) => {
+io.on("connect", (socket: any) => {
   console.log("user connected");
 
-  socket.on("new user", (userId) => {
-    addSocketUser(userId, socket.id);
-    io.emit("get users", socketUsers);
+  socket.on("newUser", (userId: string) => {
+    const addedSocketUsers = addSocketUser(userId, socket.id, socketUsers);
+    if (addedSocketUsers) {
+      io.emit("getUsers", socketUsers);
+    }
   });
 
+  socket.on(
+    "sendMessage",
+    ({ senderId, receiverId, messageId, text }: ISendMessage) => {
+      const receiver = getSocketUser(receiverId, socketUsers);
+
+      if (!receiver) return;
+      console.log("message sent");
+
+      io.to(receiver.socketId).emit("getMessage", {
+        messageId,
+        senderId,
+        text,
+      });
+    }
+  );
+
   socket.on("disconnect", () => {
-    removeSocketUser(socket.id);
-    io.emit("get users", socketUsers);
+    socketUsers = removeSocketUser(socket.id, socketUsers);
+    io.emit("getUsers", socketUsers);
   });
 });
 

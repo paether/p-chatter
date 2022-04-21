@@ -5,6 +5,8 @@ export interface IUser extends mongoose.Document {
   password: string;
   picture: string;
   friends: Array<string>;
+  updatedAt?: string;
+  createdAt?: string;
 }
 
 const UserSchema: mongoose.Schema = new mongoose.Schema(

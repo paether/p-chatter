@@ -2,7 +2,7 @@ import { Response } from "express";
 import Conversation from "../../models/Conversation";
 import IReqUser from "../../interfaces/userInterface";
 
-import verifyMongoIds from "../../middlewares/helpers";
+import { verifyMongoIds } from "../../utils/helpers";
 import User from "../../models/User";
 
 const post_new_conversation = async (req: IReqUser, res: Response) => {

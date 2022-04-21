@@ -28,6 +28,9 @@ router.delete(
 router.get("/:id/friends", checkAuthentication, usersController.get_friends);
 
 //get  user
-router.get("/", checkAuthentication, usersController.get_specific_user);
+router.get("/:id", checkAuthentication, usersController.get_specific_user);
+
+// get users
+router.get("/", checkAuthentication, usersController.get_users);
 
 export default router;

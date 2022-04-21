@@ -14,9 +14,9 @@ const io = new Server(server, {
 });
 const sessionMiddleware = session({
   secret: "r8q,+&1LM3)CD*zAGpx1xm{NeQ",
-  resave: true,
+  resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 60 * 60 * 10000 },
+  cookie: { maxAge: 60 * 60 * 10000, httpOnly: true },
 });
 
 app.use(helmet());
@@ -27,5 +27,20 @@ app.use(sessionMiddleware);
 app.use(cookieParser("r8q,+&1LM3)CD*zAGpx1xm{NeQ"));
 app.use(passport.initialize());
 app.use(passport.session());
+
+const wrap = (middleware: any) => (socket: any, next: any) =>
+  middleware(socket.request, {}, next);
+
+io.use(wrap(sessionMiddleware));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+
+io.use((socket: any, next: any) => {
+  if (socket.request.user) {
+    next();
+  } else {
+    next(new Error("unauthorized"));
+  }
+});
 
 export { server, app, io, sessionMiddleware };

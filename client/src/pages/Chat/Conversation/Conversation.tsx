@@ -4,7 +4,7 @@ import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { axiosInstance } from "../../../api";
 
 interface IConversation {
-  members: [];
+  members: string[];
   _id: string;
 }
 
@@ -40,11 +40,12 @@ const Conversation: React.FC<{
 
     const getFriend = async () => {
       try {
-        const resp = await axiosInstance.get("/users", {
-          params: {
-            specUserId: friendId,
-          },
-        });
+        // const resp = await axiosInstance.get("/users", {
+        //   params: {
+        //     specUserId: friendId,
+        //   },
+        // });
+        const resp = await axiosInstance.get("/users/" + friendId, {});
         setFriend(resp.data);
       } catch (error) {
         console.log(error);

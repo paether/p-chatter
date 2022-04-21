@@ -7,6 +7,7 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
+import { io, Socket } from "socket.io-client";
 
 import { AuthContext } from "./context/AuthContext";
 
@@ -19,7 +20,16 @@ import "./App.css";
 function App() {
   const { state, dispatch } = useContext(AuthContext);
   const [isLoading, setIsloading] = useState(true);
-  console.log(state.user);
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    if (state.user) {
+      const newSocket: Socket = io("http://localhost:8800", {
+        withCredentials: true,
+      });
+      setSocket(newSocket);
+    }
+  }, [state.user]);
 
   const checkAuth = async () => {
     try {
@@ -68,7 +78,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/chat" element={state.user ? <Chat /> : <Login />} />
+        <Route
+          path="/chat"
+          element={state.user ? <Chat socket={socket} /> : <Login />}
+        />
       </Routes>
     </Router>
   );
