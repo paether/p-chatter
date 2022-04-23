@@ -1,12 +1,6 @@
-import React, { useContext, useEffect, useState, Suspense } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { axiosInstance } from "./api";
-import {
-  Routes,
-  Route,
-  BrowserRouter as Router,
-  useLocation,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
 import { AuthContext } from "./context/AuthContext";
@@ -31,7 +25,7 @@ function App() {
     }
   }, [state.user]);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       setIsloading(true);
       const resp = await axiosInstance.get("/auth/isloggedin");
@@ -43,30 +37,13 @@ function App() {
       setIsloading(false);
       console.log(error);
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     if (!state.user) {
       checkAuth();
     }
-  }, []);
-
-  // const updatePass = async () => {
-  //   try {
-  //     const resp = await axios({
-  //       method: "put",
-  //       data: {
-  //         password,
-  //         id: user,
-  //       },
-  //       withCredentials: true,
-  //       url: "http://localhost:8800/api/users/" + user + "/updatepassword",
-  //     });
-  //     console.log(resp);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  }, [checkAuth, state.user]);
 
   if (isLoading) {
     return <Loading />;

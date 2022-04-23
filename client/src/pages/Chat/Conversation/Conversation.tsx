@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { axiosInstance } from "../../../api";
 
@@ -12,12 +12,6 @@ export interface IFriend {
   _id: string;
   username: string;
   picture: string;
-}
-
-interface IMessage {
-  conversationId: string;
-  senderId: string;
-  text: string;
 }
 
 const Conversation: React.FC<{
@@ -40,12 +34,7 @@ const Conversation: React.FC<{
 
     const getFriend = async () => {
       try {
-        // const resp = await axiosInstance.get("/users", {
-        //   params: {
-        //     specUserId: friendId,
-        //   },
-        // });
-        const resp = await axiosInstance.get("/users/" + friendId, {});
+        const resp = await axiosInstance.get("/users/" + friendId);
         setFriend(resp.data);
       } catch (error) {
         console.log(error);

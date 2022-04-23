@@ -8,12 +8,6 @@ export type actionType =
   | { type: "LOGIN_SUCCESS"; payload: string }
   | { type: "LOGIN_ERROR"; payload: any };
 
-interface initialStateInterface {
-  user: string;
-  isFetching: boolean;
-  error: any;
-}
-
 export const AuthReducer = (
   state: AuthState,
   action: actionType

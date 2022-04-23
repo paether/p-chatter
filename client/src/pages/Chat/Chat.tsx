@@ -5,9 +5,8 @@ import React, {
   useCallback,
   useRef,
 } from "react";
-import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faCircle } from "@fortawesome/free-solid-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
 import { AuthContext } from "../../context/AuthContext";
 import Conversation from "./Conversation/Conversation";
@@ -65,7 +64,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         ]);
       }
     });
-  }, []);
+  }, [currentConversation?.members, socket, state.user]);
 
   const handleSendNewMessage = useCallback(async () => {
     if (!currentConversation) return;
@@ -129,10 +128,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (!messageRef.current) return;
     messageRef.current.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  const findUsers = async () => {
-    let test = "pet";
-  };
 
   useEffect(() => {
     let filterTimeout = setTimeout(async () => {
