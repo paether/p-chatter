@@ -6,7 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faMessage } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
 import { AuthContext } from "../../context/AuthContext";
 import Conversation from "./Conversation/Conversation";
@@ -27,11 +27,19 @@ interface IMessage {
   text: string;
   createdAt: any;
 }
+interface ISearchedPerson {
+  _id: string;
+  username: string;
+  picture: string;
+}
 
 export const Chat = ({ socket }: { socket: Socket | null }) => {
   const { state } = useContext(AuthContext);
   const messageRef = useRef<HTMLDivElement>(null);
-
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchResultRef = useRef<HTMLUListElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
   const [conversations, setConversations] = useState<IConversation[] | null>(
     null
   );
@@ -52,6 +60,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
     socket.emit("newUser", state.user);
     socket.on("getMessage", (message) => {
+      console.log(currentConversation?.members);
+
       if (currentConversation?.members.includes(message.senderId)) {
         setMessages((prev) => [
           ...prev,
@@ -79,7 +89,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       const receiverId = currentConversation.members.find(
         (member) => member !== state.user
       );
-      console.log("sent");
 
       socket?.emit("sendMessage", {
         senderId: state.user,
@@ -130,15 +139,26 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [messages]);
 
   useEffect(() => {
+    if (!messageRef.current) return;
+    messageRef.current.scrollIntoView();
+  }, []);
+
+  useEffect(() => {
+    if (userFilter.length === 0) {
+      if (searchedPeople.length > 0) {
+        setSearchedPeople([]);
+      }
+      return;
+    }
+
     let filterTimeout = setTimeout(async () => {
-      console.log("filtering");
       try {
         const resp = await axiosInstance.get("/users", {
           params: {
             username: userFilter,
           },
         });
-        console.log(resp);
+        setSearchedPeople(resp.data);
       } catch (error) {
         console.log(error);
       }
@@ -147,20 +167,89 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     return () => {
       clearTimeout(filterTimeout);
     };
-  }, [userFilter]);
+  }, [searchedPeople.length, userFilter]);
+
+  const handleSearchClicked = (e: any, clicked: boolean) => {
+    if (clicked) {
+      searchResultRef.current?.classList.add("visible");
+      searchContainerRef.current?.classList.add("active");
+      return;
+    }
+  };
+  const addFriend = async (id: string) => {
+    if (id === state.user) {
+      alert("cannot add yourself as friend!");
+      return;
+    }
+    try {
+      const resp = await axiosInstance.put(`/users/${id}/addfriend`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const hideDropDown = (e: any) => {
+    const target = e.target as HTMLElement;
+    if (!searchRef.current?.contains(target)) {
+      searchResultRef.current?.classList.remove("visible");
+      searchContainerRef.current?.classList.remove("active");
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", hideDropDown);
+
+    return () => {
+      document.removeEventListener("mousedown", hideDropDown);
+    };
+  }, []);
+
+  const handleOpenChat = async (userId: string) => {
+    try {
+      await axiosInstance.post("/chat", {
+        senderId: state.user,
+        receiverId: userId,
+      });
+      getConversations();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div className="container">
       <div className="people-list-container" id="people-list">
-        <div className="search">
-          <div className="search-container">
+        <div className="search" ref={searchRef}>
+          <div className="search-container" ref={searchContainerRef}>
             <input
               type="text"
               placeholder="search"
+              className="search-input"
+              onFocus={(e) => handleSearchClicked(e, true)}
               onChange={(e) => setUserFilter(e.target.value)}
             />
             <FontAwesomeIcon icon={faSearch} />
           </div>
+          <ul className="search-result-container" ref={searchResultRef}>
+            {searchedPeople.map((person) => {
+              return (
+                <li key={person._id} className="search-result">
+                  <div
+                    onClick={() => addFriend(person._id)}
+                    className="username"
+                  >
+                    {person.username}
+                  </div>
+                  <div
+                    className="chat"
+                    onClick={() => handleOpenChat(person._id)}
+                  >
+                    <FontAwesomeIcon icon={faMessage} />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         </div>
         <ul className="people-list">
           {conversations
@@ -168,7 +257,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
                 return (
                   <Conversation
                     conversation={conversation}
-                    key={state.user}
+                    key={conversation._id}
                     userId={state.user}
                     setCurrentConversation={setCurrentConversation}
                     setCurrentChatPartner={setCurrentChatPartner}

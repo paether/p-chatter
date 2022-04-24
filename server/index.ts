@@ -34,7 +34,6 @@ interface ISendMessage {
 }
 
 let socketUsers: ISocketUser[] = [];
-console.log(socketUsers);
 
 io.on("connect", (socket: any) => {
   console.log("user connected");

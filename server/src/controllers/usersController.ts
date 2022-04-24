@@ -36,22 +36,28 @@ const put_id_password = async (req: IReqUser, res: Response) => {
 };
 
 const put_add_friend = async (req: IReqUser, res: Response) => {
-  if (req.user.id === req.body.id) {
+  const validIds = verifyMongoIds([req.user.id, req.params.id]);
+  if (!validIds) return res.status(400).json("Invalid values");
+
+  if (req.user.id === req.params.id) {
     return res.status(403).json("Cannot add same user as friend");
   } else {
     try {
-      const addFriend = await User.findById({ _id: req.body.id });
+      const addFriend = await User.findById({ _id: req.params.id });
       if (!addFriend) {
-        return res.status(404).json("The to-be-added friend does not exist");
+        return res.status(400);
       }
       const user = await User.findById({ _id: req.user.id });
-      if (!user!.friends.includes(req.body.id)) {
+      if (!user) {
+        return res.status(400);
+      }
+      if (!user.friends.includes(req.params.id)) {
         await User.updateOne(
           { _id: req.user.id },
-          { $push: { friends: req.body.id } }
+          { $push: { friends: req.params.id } }
         );
         await User.updateOne(
-          { _id: req.body.id },
+          { _id: req.params.id },
           { $push: { friends: req.user.id } }
         );
         return res.json("User added as friend!");
