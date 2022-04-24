@@ -37,7 +37,6 @@ export const Login: React.FC = () => {
     e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
-
     try {
       if (isLogin) {
         dispatch({ type: "LOGIN_START" });
@@ -46,7 +45,8 @@ export const Login: React.FC = () => {
         localStorage.setItem("user", resp);
       } else {
         dispatch({ type: "REGISTER_START" });
-        const resp = await registerCall(username, password);
+        await registerCall(username, password);
+        const resp = await loginCall(username, password);
         dispatch({ type: "REGISTER_SUCCESS", payload: resp });
         localStorage.setItem("user", resp);
       }

@@ -48,6 +48,8 @@ const post_new_conversation = async (req: IReqUser, res: Response) => {
 };
 
 const get_all_conversation = async (req: IReqUser, res: Response) => {
+  console.log("here");
+
   const validIds = verifyMongoIds([req.user.id]);
   if (!validIds) return res.status(400).json("Invalid values");
   try {
@@ -56,6 +58,8 @@ const get_all_conversation = async (req: IReqUser, res: Response) => {
     });
     return res.json(conv);
   } catch (error) {
+    console.log(error);
+
     return res.status(500).json(error);
   }
 };

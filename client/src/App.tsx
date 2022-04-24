@@ -13,7 +13,6 @@ import "./App.css";
 
 function App() {
   const { state, dispatch } = useContext(AuthContext);
-  const [isLoading, setIsloading] = useState(true);
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
@@ -26,26 +25,29 @@ function App() {
   }, [state.user]);
 
   const checkAuth = useCallback(async () => {
+    console.log("run");
+
     try {
-      setIsloading(true);
+      dispatch({ type: "LOGIN_START" });
+
       const resp = await axiosInstance.get("/auth/isloggedin");
       if (resp) {
-        setIsloading(false);
         dispatch({ type: "LOGIN_SUCCESS", payload: resp.data.id });
       }
     } catch (error) {
-      setIsloading(false);
       console.log(error);
+
+      dispatch({ type: "LOGIN_ERROR", payload: error });
     }
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     if (!state.user) {
       checkAuth();
     }
-  }, [checkAuth, state.user]);
+  }, []);
 
-  if (isLoading) {
+  if (state.isFetching) {
     return <Loading />;
   }
 

@@ -60,8 +60,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
     socket.emit("newUser", state.user);
     socket.on("getMessage", (message) => {
-      console.log(currentConversation?.members);
-
       if (currentConversation?.members.includes(message.senderId)) {
         setMessages((prev) => [
           ...prev,
@@ -74,7 +72,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         ]);
       }
     });
-  }, [currentConversation?.members, socket, state.user]);
+  }, [state.user]);
+
+  useEffect(() => {
+    console.log("conversation changed", currentConversation?.members);
+  }, [currentConversation]);
 
   const handleSendNewMessage = useCallback(async () => {
     if (!currentConversation) return;
@@ -104,13 +106,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [currentConversation, newMessage, socket, state.user]);
 
   const getConversations = useCallback(async () => {
-    try {
-      const resp = await axiosInstance.get("/chat");
-      setConversations(resp.data);
-    } catch (error) {
-      console.log(error);
+    if (state.user) {
+      try {
+        const resp = await axiosInstance.get("/chat");
+        console.log("success");
+
+        setConversations(resp.data);
+      } catch (error) {
+        console.log(error);
+      }
     }
-  }, []);
+  }, [state.user]);
 
   const getMessages = useCallback(async () => {
     if (!currentConversation) return;
@@ -135,13 +141,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     if (!messageRef.current) return;
-    messageRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    messageRef.current.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "nearest",
+    });
+  }, [newMessage]);
 
   useEffect(() => {
     if (!messageRef.current) return;
-    messageRef.current.scrollIntoView();
-  }, []);
+    messageRef.current.scrollIntoView(false);
+  }, [messages]);
 
   useEffect(() => {
     if (userFilter.length === 0) {
@@ -252,7 +262,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           </ul>
         </div>
         <ul className="people-list">
-          {conversations
+          {conversations && conversations.length > 0
             ? conversations.map((conversation) => {
                 return (
                   <Conversation
