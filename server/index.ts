@@ -36,10 +36,9 @@ interface ISendMessage {
 let socketUsers: ISocketUser[] = [];
 
 io.on("connect", (socket: any) => {
-  console.log("user connected");
-
   socket.on("newUser", (userId: string) => {
     const addedSocketUsers = addSocketUser(userId, socket.id, socketUsers);
+
     if (addedSocketUsers) {
       io.emit("getUsers", socketUsers);
     }

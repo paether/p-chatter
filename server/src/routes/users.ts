@@ -25,7 +25,7 @@ router.delete(
   usersController.delete_remove_friend
 );
 //get friends
-router.get("/:id/friends", checkAuthentication, usersController.get_friends);
+router.get("/friends", checkAuthentication, usersController.get_friends);
 
 //get  user
 router.get("/:id", checkAuthentication, usersController.get_specific_user);

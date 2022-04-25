@@ -8,11 +8,14 @@ import React, {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faMessage } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
+
+import FriendsBar from "../../components/FriendsBar";
 import { AuthContext } from "../../context/AuthContext";
-import Conversation from "./Conversation/Conversation";
+import Conversation from "./Conversation";
 import { IFriend } from "./Conversation";
 import { axiosInstance } from "../../api";
 import { Message } from "./Message";
+
 import "./Chat.css";
 
 interface IConversation {
@@ -33,16 +36,21 @@ interface ISearchedPerson {
   picture: string;
 }
 
+interface IOnlineFriend extends IFriend {
+  online?: boolean;
+}
+
+type IOnlineFriends = IOnlineFriend[];
+
 export const Chat = ({ socket }: { socket: Socket | null }) => {
   const { state } = useContext(AuthContext);
   const messageRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchResultRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
-  const [conversations, setConversations] = useState<IConversation[] | null>(
-    null
-  );
+  const [conversations, setConversations] = useState<IConversation[] | []>([]);
   const [currentConversation, setCurrentConversation] =
     useState<IConversation | null>(null);
   const [messages, setMessages] = useState<IMessage[] | []>([]);
@@ -51,14 +59,25 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   );
   const [newMessage, setNewMessage] = useState<string>("");
   const [userFilter, setUserFilter] = useState("");
-
-  // const [sockt, setSocket] = useState<typeof io | null>(null);
+  const [friends, setFriends] = useState<IOnlineFriends | []>([]);
 
   useEffect(() => {
-    if (!socket) {
+    if (!socket || !state.user) {
       return;
     }
     socket.emit("newUser", state.user);
+    socket.on("getUsers", (socketUsers) => {
+      console.log("friends", friends);
+
+      const onlineFriends = friends.map((friend) => {
+        if (socketUsers.find((user: any) => user.userId === friend._id)) {
+          return { ...friend, online: true };
+        }
+        return friend;
+      });
+
+      setFriends(onlineFriends);
+    });
     socket.on("getMessage", (message) => {
       if (currentConversation?.members.includes(message.senderId)) {
         setMessages((prev) => [
@@ -72,11 +91,21 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         ]);
       }
     });
-  }, [state.user]);
+  }, [state.user, socket]);
 
   useEffect(() => {
-    console.log("conversation changed", currentConversation?.members);
-  }, [currentConversation]);
+    const getFriends = async () => {
+      try {
+        const resp = await axiosInstance.get("/users/friends");
+        setFriends(resp.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    getFriends();
+  }, []);
+
+  useEffect(() => {}, [currentConversation]);
 
   const handleSendNewMessage = useCallback(async () => {
     if (!currentConversation) return;
@@ -109,7 +138,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (state.user) {
       try {
         const resp = await axiosInstance.get("/chat");
-        console.log("success");
 
         setConversations(resp.data);
       } catch (error) {
@@ -131,6 +159,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       console.log(error);
     }
   }, [currentConversation]);
+
   useEffect(() => {
     getConversations();
   }, [getConversations]);
@@ -140,17 +169,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [currentConversation, getMessages]);
 
   useEffect(() => {
-    if (!messageRef.current) return;
-    messageRef.current.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "nearest",
-    });
-  }, [newMessage]);
-
-  useEffect(() => {
-    if (!messageRef.current) return;
-    messageRef.current.scrollIntoView(false);
+    if (!messagesRef.current) return;
+    messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
   }, [messages]);
 
   useEffect(() => {
@@ -293,35 +313,37 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
             </div>
           </div>
 
-          <div className="chat-history">
-            <ul>
-              {currentConversation ? (
-                messages.map((msg) => {
-                  return (
-                    <div
-                      key={msg._id}
-                      className="message-container"
-                      ref={messageRef}
-                    >
-                      <Message
-                        isRight={msg.senderId === state.user}
-                        message={msg.text}
-                        name={
-                          msg.senderId === state.user
-                            ? "me"
-                            : currentChatPartner!.username
-                        }
-                        time={msg.createdAt}
-                      />
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="default-message">
-                  Open a conversation to start chatting!
-                </div>
-              )}
-            </ul>
+          <div className="chat-history" ref={messagesRef}>
+            {currentConversation ? (
+              messages.map((msg) => {
+                return (
+                  <div
+                    key={msg._id}
+                    className={
+                      msg.senderId === state.user
+                        ? "message-container align-right"
+                        : "message-container"
+                    }
+                    ref={messageRef}
+                  >
+                    <Message
+                      isRight={msg.senderId === state.user}
+                      message={msg.text}
+                      name={
+                        msg.senderId === state.user
+                          ? "me"
+                          : currentChatPartner!.username
+                      }
+                      time={msg.createdAt}
+                    />
+                  </div>
+                );
+              })
+            ) : (
+              <div className="default-message">
+                Open a conversation to start chatting!
+              </div>
+            )}
           </div>
 
           <div className="chat-message ">
@@ -345,6 +367,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           Open a conversation to start chatting!
         </div>
       )}
+      <FriendsBar friends={friends} />
     </div>
   );
 };

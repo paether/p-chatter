@@ -8,12 +8,8 @@ export const Message: React.FC<{
   message: string;
 }> = ({ isRight, time, name, message }) => {
   return (
-    <li>
-      <div
-        className={
-          isRight ? "message-meta-data align-right" : "message-meta-data"
-        }
-      >
+    <>
+      <div className="message-meta-data">
         <span className="message-meta-data-time">{time}</span>
         <span className="message-meta-data-name">{name}</span>
         <FontAwesomeIcon
@@ -27,6 +23,6 @@ export const Message: React.FC<{
       >
         {message}
       </div>
-    </li>
+    </>
   );
 };

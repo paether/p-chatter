@@ -1,7 +1,7 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { axiosInstance } from "../../../api";
+
+import Friend from "../Friend";
 
 interface IConversation {
   members: string[];
@@ -11,7 +11,7 @@ interface IConversation {
 export interface IFriend {
   _id: string;
   username: string;
-  picture: string;
+  picture?: string;
 }
 
 const Conversation: React.FC<{
@@ -49,19 +49,11 @@ const Conversation: React.FC<{
   };
 
   return (
-    <li className="person" onClick={handleClick}>
-      <img
-        src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"
-        alt="avatar"
-      />
-      <div className="about">
-        <div className="name">{friend?.username}</div>
-        <div className="status">
-          <FontAwesomeIcon className="online" icon={faCircle} />
-          online
-        </div>
-      </div>
-    </li>
+    <Friend
+      onFriendClick={handleClick}
+      avatarSrc="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"
+      name={friend ? friend?.username : "anonym"}
+    />
   );
 };
 

@@ -100,12 +100,6 @@ const delete_remove_friend = async (req: IReqUser, res: Response) => {
 };
 
 const get_friends = async (req: IReqUser, res: Response) => {
-  if (req.user.id !== req.params.id) {
-    return res
-      .status(401)
-      .json("Logged in user and requested user does not match");
-  }
-
   try {
     const user = await User.findById({ _id: req.user.id });
     if (!user) {
@@ -117,12 +111,13 @@ const get_friends = async (req: IReqUser, res: Response) => {
 
     let friendsFiltered: Array<{ _id: string; username: string }> = [];
     friends.map((friend) => {
-      // if (!friend) return;
       const { _id, username } = friend!;
       friendsFiltered.push({ _id, username });
     });
     return res.json(friendsFiltered);
   } catch (error) {
+    console.log(error);
+
     return res.status(500).json(error);
   }
 };

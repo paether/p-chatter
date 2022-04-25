@@ -25,8 +25,6 @@ function App() {
   }, [state.user]);
 
   const checkAuth = useCallback(async () => {
-    console.log("run");
-
     try {
       dispatch({ type: "LOGIN_START" });
 
