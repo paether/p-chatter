@@ -40,7 +40,10 @@ interface IOnlineFriend extends IFriend {
   online?: boolean;
 }
 
-type IOnlineFriends = IOnlineFriend[];
+interface ISocketUser {
+  userId: string;
+  socketId: string;
+}
 
 export const Chat = ({ socket }: { socket: Socket | null }) => {
   const { state } = useContext(AuthContext);
@@ -59,24 +62,36 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   );
   const [newMessage, setNewMessage] = useState<string>("");
   const [userFilter, setUserFilter] = useState("");
-  const [friends, setFriends] = useState<IOnlineFriends | []>([]);
+  const [friends, setFriends] = useState<IOnlineFriend[] | []>([]);
+  const [onlineUsers, setOnlineUsers] = useState<ISocketUser[] | []>([]);
+
+  useEffect(() => {
+    if (onlineUsers.length === 0 || friends.length === 0) {
+      return;
+    }
+    const onlineFriends = friends.map((friend) => {
+      if (onlineUsers.find((user: any) => user.userId === friend._id)) {
+        return { ...friend, online: true };
+      }
+      return { ...friend, online: false };
+    });
+
+    setFriends(onlineFriends);
+  }, [onlineUsers, friends]);
 
   useEffect(() => {
     if (!socket || !state.user) {
       return;
     }
+    let onlineStatusTimeout: any;
+
     socket.emit("newUser", state.user);
     socket.on("getUsers", (socketUsers) => {
-      console.log("friends", friends);
+      clearTimeout(onlineStatusTimeout);
 
-      const onlineFriends = friends.map((friend) => {
-        if (socketUsers.find((user: any) => user.userId === friend._id)) {
-          return { ...friend, online: true };
-        }
-        return friend;
-      });
-
-      setFriends(onlineFriends);
+      onlineStatusTimeout = setTimeout(() => {
+        setOnlineUsers(socketUsers);
+      }, 2000);
     });
     socket.on("getMessage", (message) => {
       if (currentConversation?.members.includes(message.senderId)) {

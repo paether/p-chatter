@@ -13,7 +13,10 @@ const FriendsBar = ({ friends }: { friends: any }) => {
           return (
             <li key={friend._id} className="friend">
               <div className="name">{friend.username}</div>
-              <FontAwesomeIcon className="offline status" icon={faCircle} />
+              <FontAwesomeIcon
+                className={friend.online ? "online status" : "offline status"}
+                icon={faCircle}
+              />
             </li>
           );
         })}
