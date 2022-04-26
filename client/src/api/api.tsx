@@ -44,3 +44,81 @@ export const registerCall = async (username: string, password: string) => {
     throwError("Register error", error.response);
   }
 };
+
+export const getFriendsCall = async () => {
+  try {
+    const resp = await axiosInstance.get("/users/friends");
+    return resp.data;
+  } catch (error: any) {
+    throwError("Get friends error", error.response);
+  }
+};
+
+export const postNewMessageCall = async (
+  convId: string,
+  newMessage: string
+) => {
+  try {
+    const resp = await axiosInstance.post(`chat/${convId}/messages`, {
+      text: newMessage,
+    });
+    return resp.data;
+  } catch (error: any) {
+    throwError("Post new message error", error.response);
+  }
+};
+
+export const getConversationsCall = async () => {
+  try {
+    const resp = await axiosInstance.get("/chat");
+    return resp.data;
+  } catch (error: any) {
+    throwError("Get conversations error", error.response);
+  }
+};
+
+export const getMessagesCall = async (convId: string) => {
+  try {
+    const resp = await axiosInstance.get(`/chat/${convId}/messages`);
+    return resp.data;
+  } catch (error: any) {
+    throwError("Get messages error", error.response);
+  }
+};
+
+export const getUsersCall = async (userFilter: string) => {
+  try {
+    const resp = await axiosInstance.get("/users", {
+      params: {
+        username: userFilter,
+      },
+    });
+    return resp.data;
+  } catch (error: any) {
+    throwError("Get users error", error.response);
+  }
+};
+
+export const putAddFriendCall = async (userId: string) => {
+  try {
+    await axiosInstance.put(`/users/${userId}/addfriend`);
+    return;
+  } catch (error: any) {
+    throwError("Get users error", error.response);
+  }
+};
+
+export const postNewConversationCall = async (
+  senderId: string,
+  receiverId: string
+) => {
+  try {
+    await axiosInstance.post("/chat", {
+      senderId,
+      receiverId,
+    });
+    return;
+  } catch (error: any) {
+    throwError("Get users error", error.response);
+  }
+};

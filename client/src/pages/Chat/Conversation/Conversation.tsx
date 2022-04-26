@@ -1,4 +1,10 @@
-import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
+import React, {
+  useEffect,
+  useCallback,
+  useState,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 
@@ -7,31 +13,13 @@ import { axiosInstance } from "../../../api";
 interface IConversationExtended {
   members: string[];
   _id: string;
-  friend: {
-    _id: string;
-    username: string;
-    picture: string;
-    online?: string;
-  };
-}
-
-export interface IFriend {
-  _id: string;
-  username: string;
-  picture?: string;
-  online?: boolean;
-}
-interface ISocketUser {
-  userId: string;
-  socketId: string;
+  friend: IFriend;
 }
 
 const Conversation: React.FC<{
-  conversations: IConversationExtended[];
+  conversations: IConversation[];
   userId: string;
-  setCurrentConversation: Dispatch<
-    SetStateAction<IConversationExtended | null>
-  >;
+  setCurrentConversation: Dispatch<SetStateAction<IConversation | null>>;
   setCurrentChatPartner: Dispatch<SetStateAction<IFriend | null>>;
   onlineUsers: ISocketUser[];
 }> = ({
@@ -41,14 +29,51 @@ const Conversation: React.FC<{
   setCurrentChatPartner,
   onlineUsers,
 }) => {
-  const [friend, setFriend] = useState<IFriend | null>(null);
+  const [conversationsExtended, setConversationsExtended] = useState<
+    IConversationExtended[]
+  >([]);
 
-  const handleClick = () => {
-    setCurrentChatPartner(friend);
-  };
+  const getFriend = useCallback(async (friendId: string) => {
+    try {
+      const resp = await axiosInstance.get("/users/" + friendId);
+      return resp.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
+  const getExtendedConversations = useCallback(async () => {
+    console.log("getting extended");
+
+    const extendedConv: IConversationExtended[] = await Promise.all(
+      conversations.map(async (conversation: IConversation) => {
+        const friendId = conversation.members.find(
+          (memberId: string) => memberId !== userId
+        );
+        let friend = await getFriend(friendId!);
+
+        if (onlineUsers) {
+          const isOnline = onlineUsers.some((user) => {
+            return user.userId === friend._id;
+          });
+          if (isOnline) {
+            friend = { ...friend, online: true };
+          }
+        }
+        return { ...conversation, friend };
+      })
+    );
+    setConversationsExtended(extendedConv);
+  }, [conversations, getFriend, onlineUsers, userId]);
+
+  useEffect(() => {
+    getExtendedConversations();
+  }, [conversations, getExtendedConversations, onlineUsers]);
+
   return (
     <>
-      {conversations
+      {conversationsExtended
+        //put online friends ahead in list
         .reduce((acc, conversation) => {
           if (conversation.friend.online) {
             return [conversation, ...acc];
@@ -62,6 +87,7 @@ const Conversation: React.FC<{
               className="person"
               onClick={() => {
                 setCurrentConversation(conversation);
+                setCurrentChatPartner(conversation.friend!);
               }}
             >
               <img

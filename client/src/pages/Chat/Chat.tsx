@@ -6,45 +6,29 @@ import React, {
   useRef,
 } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faMessage } from "@fortawesome/free-solid-svg-icons";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
 
+import {
+  getConversationsCall,
+  getFriendsCall,
+  getMessagesCall,
+  getUsersCall,
+  postNewConversationCall,
+  postNewMessageCall,
+  putAddFriendCall,
+} from "../../api";
 import FriendsBar from "../../components/FriendsBar";
 import { AuthContext } from "../../context/AuthContext";
 import Conversation from "./Conversation";
-import { IFriend } from "./Conversation";
-import { axiosInstance } from "../../api";
 import { Message } from "./Message";
 
 import "./Chat.css";
 
-interface IConversationExtended {
-  members: string[];
-  _id: string;
-  friend: {
-    _id: string;
-    username: string;
-    picture: string;
-    online?: string;
-  };
-}
-
-interface IMessage {
-  _id: string;
-  conversationId?: string;
-  senderId: string;
-  text: string;
-  createdAt: any;
-}
 interface ISearchedPerson {
   _id: string;
   username: string;
   picture: string;
-}
-
-interface ISocketUser {
-  userId: string;
-  socketId: string;
 }
 
 export const Chat = ({ socket }: { socket: Socket | null }) => {
@@ -54,14 +38,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchResultRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
-  const messageToSendRef = useRef<HTMLTextAreaElement>(null);
 
   const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
-  const [conversations, setConversations] = useState<
-    IConversationExtended[] | []
-  >([]);
+  const [conversations, setConversations] = useState<IConversation[] | []>([]);
   const [currentConversation, setCurrentConversation] =
-    useState<IConversationExtended | null>(null);
+    useState<IConversation | null>(null);
   const [messages, setMessages] = useState<IMessage[] | []>([]);
   const [currentChatPartner, setCurrentChatPartner] = useState<IFriend | null>(
     null
@@ -83,7 +64,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       return { ...friend, online: false };
     });
     setFriends(onlineFriends);
-  }, [onlineUsers]);
+  }, [onlineUsers, friends]);
 
   useEffect(() => {
     if (!socket || !state.user) {
@@ -112,12 +93,13 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         ]);
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.user, socket]);
 
   const getFriends = useCallback(async () => {
     try {
-      const resp = await axiosInstance.get("/users/friends");
-      setFriends(resp.data);
+      const friends = await getFriendsCall();
+      setFriends(friends);
     } catch (error) {
       console.log(error);
     }
@@ -125,89 +107,50 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     getFriends();
-  }, []);
+  }, [getFriends]);
 
   const handleSendNewMessage = useCallback(async () => {
     if (!currentConversation) return;
     try {
-      const resp = await axiosInstance.post(
-        `chat/${currentConversation._id!}/messages`,
-        {
-          text: newMessage,
-        }
+      const postedMessage = await postNewMessageCall(
+        currentConversation._id!,
+        newMessage
       );
-
       const receiverId = currentConversation.members.find(
         (member) => member !== state.user
       );
-
       socket?.emit("sendMessage", {
         senderId: state.user,
         receiverId,
-        messageId: resp.data._id,
+        messageId: postedMessage._id,
         text: newMessage,
       });
-      setMessages((prev) => [...prev, resp.data]);
+      setMessages((prev) => [...prev, postedMessage]);
       setNewMessage("");
     } catch (error) {
       console.log(error);
     }
   }, [currentConversation, newMessage, socket, state.user]);
 
-  const getFriend = useCallback(async (friendId: string) => {
-    try {
-      const resp = await axiosInstance.get("/users/" + friendId);
-      return resp.data;
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
-
   const getConversations = useCallback(async () => {
     if (state.user) {
       try {
-        const conversations = await axiosInstance.get("/chat");
-        const conversationsExtended = await Promise.all(
-          conversations.data.map(
-            async (conversation: IConversationExtended) => {
-              const friendId = conversation.members.find(
-                (memberId: string) => memberId !== state.user
-              );
-              let friend = await getFriend(friendId!);
+        console.log("setting conv");
 
-              if (onlineUsers) {
-                const isOnline = onlineUsers.some((user) => {
-                  return user.userId === friend._id;
-                });
-                if (isOnline) {
-                  friend = { ...friend, online: true };
-                }
-              }
-              return { ...conversation, friend };
-            }
-          )
-        );
-
-        setConversations(conversationsExtended);
+        const conversations = await getConversationsCall();
+        setConversations(conversations);
       } catch (error) {
         console.log(error);
       }
     }
-  }, [state.user, onlineUsers]);
-
-  useEffect(() => {
-    console.log(conversations);
-  }, [conversations]);
+  }, [state.user]);
 
   const getMessages = useCallback(async () => {
     if (!currentConversation) return;
 
     try {
-      const resp = await axiosInstance.get(
-        `/chat/${currentConversation._id}/messages`
-      );
-
-      setMessages(resp.data);
+      const messages = await getMessagesCall(currentConversation._id);
+      setMessages(messages);
       setNewMessage("");
     } catch (error) {
       console.log(error);
@@ -229,20 +172,15 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     if (userFilter.length === 0) {
-      if (searchedPeople.length > 0) {
-        setSearchedPeople([]);
-      }
+      setSearchedPeople([]);
+
       return;
     }
-
+    //debouncing input to not make requests until user stops typing
     let filterTimeout = setTimeout(async () => {
       try {
-        const resp = await axiosInstance.get("/users", {
-          params: {
-            username: userFilter,
-          },
-        });
-        setSearchedPeople(resp.data);
+        const users = await getUsersCall(userFilter);
+        setSearchedPeople(users);
       } catch (error) {
         console.log(error);
       }
@@ -251,7 +189,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     return () => {
       clearTimeout(filterTimeout);
     };
-  }, [searchedPeople.length, userFilter]);
+  }, [userFilter]);
 
   const handleSearchClicked = (e: any, clicked: boolean) => {
     if (clicked) {
@@ -266,7 +204,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       return;
     }
     try {
-      await axiosInstance.put(`/users/${id}/addfriend`);
+      await putAddFriendCall(id);
       getFriends();
     } catch (error) {
       console.log(error);
@@ -291,10 +229,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   const handleOpenChat = async (userId: string) => {
     try {
-      await axiosInstance.post("/chat", {
-        senderId: state.user,
-        receiverId: userId,
-      });
+      await postNewConversationCall(state.user, userId);
       getConversations();
     } catch (error) {
       console.log(error);

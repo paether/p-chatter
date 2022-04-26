@@ -2,7 +2,6 @@ import "./FriendsBar.css";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
-import { IFriend } from "../../pages/Chat/Conversation";
 
 interface IOnlineFriend extends IFriend {
   online?: boolean;

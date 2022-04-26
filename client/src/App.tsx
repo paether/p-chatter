@@ -25,6 +25,8 @@ function App() {
   }, [state.user]);
 
   const checkAuth = useCallback(async () => {
+    console.log("chechking auth");
+
     try {
       dispatch({ type: "LOGIN_START" });
 
@@ -37,13 +39,13 @@ function App() {
 
       dispatch({ type: "LOGIN_ERROR", payload: error });
     }
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!state.user) {
       checkAuth();
     }
-  }, []);
+  }, [checkAuth, state.user]);
 
   if (state.isFetching) {
     return <Loading />;
