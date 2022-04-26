@@ -1,12 +1,18 @@
-import { useEffect, useState, Dispatch, SetStateAction } from "react";
+import React, { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 
 import { axiosInstance } from "../../../api";
 
-interface IConversation {
+interface IConversationExtended {
   members: string[];
   _id: string;
+  friend: {
+    _id: string;
+    username: string;
+    picture: string;
+    online?: string;
+  };
 }
 
 export interface IFriend {
@@ -21,13 +27,15 @@ interface ISocketUser {
 }
 
 const Conversation: React.FC<{
-  conversation: IConversation;
+  conversations: IConversationExtended[];
   userId: string;
-  setCurrentConversation: Dispatch<SetStateAction<IConversation | null>>;
+  setCurrentConversation: Dispatch<
+    SetStateAction<IConversationExtended | null>
+  >;
   setCurrentChatPartner: Dispatch<SetStateAction<IFriend | null>>;
   onlineUsers: ISocketUser[];
 }> = ({
-  conversation,
+  conversations,
   userId,
   setCurrentConversation,
   setCurrentChatPartner,
@@ -35,53 +43,46 @@ const Conversation: React.FC<{
 }) => {
   const [friend, setFriend] = useState<IFriend | null>(null);
 
-  useEffect(() => {
-    const friendId = conversation.members.find(
-      (memberId) => memberId !== userId
-    );
-
-    const getFriend = async () => {
-      try {
-        const resp = await axiosInstance.get("/users/" + friendId);
-        let friend = resp.data;
-
-        if (onlineUsers) {
-          const isOnline = onlineUsers.some((user) => {
-            return user.userId === resp.data._id;
-          });
-          if (isOnline) {
-            friend = { ...resp.data, online: true };
-          }
-        }
-        setFriend(friend);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getFriend();
-  }, [conversation, userId, onlineUsers]);
-
   const handleClick = () => {
-    setCurrentConversation(conversation);
     setCurrentChatPartner(friend);
   };
-
   return (
-    <li className="person" onClick={handleClick}>
-      <img
-        src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"
-        alt="avatar"
-      />
-      <div className="about">
-        <div className="name">{friend ? friend?.username : "anonym"}</div>
-        <div className="status">
-          <FontAwesomeIcon
-            className={friend?.online ? "online" : "offline"}
-            icon={faCircle}
-          />
-        </div>
-      </div>
-    </li>
+    <>
+      {conversations
+        .reduce((acc, conversation) => {
+          if (conversation.friend.online) {
+            return [conversation, ...acc];
+          }
+          return [...acc, conversation];
+        }, [] as IConversationExtended[])
+        .map((conversation) => {
+          return (
+            <li
+              key={conversation._id}
+              className="person"
+              onClick={() => {
+                setCurrentConversation(conversation);
+              }}
+            >
+              <img
+                src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"
+                alt="avatar"
+              />
+              <div className="about">
+                <div className="name">{conversation.friend!.username}</div>
+                <div className="status">
+                  <FontAwesomeIcon
+                    className={
+                      conversation.friend?.online ? "online" : "offline"
+                    }
+                    icon={faCircle}
+                  />
+                </div>
+              </div>
+            </li>
+          );
+        })}
+    </>
   );
 };
 

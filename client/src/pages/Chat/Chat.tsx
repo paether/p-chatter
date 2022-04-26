@@ -18,9 +18,15 @@ import { Message } from "./Message";
 
 import "./Chat.css";
 
-interface IConversation {
+interface IConversationExtended {
   members: string[];
   _id: string;
+  friend: {
+    _id: string;
+    username: string;
+    picture: string;
+    online?: string;
+  };
 }
 
 interface IMessage {
@@ -51,9 +57,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const messageToSendRef = useRef<HTMLTextAreaElement>(null);
 
   const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
-  const [conversations, setConversations] = useState<IConversation[] | []>([]);
+  const [conversations, setConversations] = useState<
+    IConversationExtended[] | []
+  >([]);
   const [currentConversation, setCurrentConversation] =
-    useState<IConversation | null>(null);
+    useState<IConversationExtended | null>(null);
   const [messages, setMessages] = useState<IMessage[] | []>([]);
   const [currentChatPartner, setCurrentChatPartner] = useState<IFriend | null>(
     null
@@ -146,17 +154,50 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
   }, [currentConversation, newMessage, socket, state.user]);
 
+  const getFriend = useCallback(async (friendId: string) => {
+    try {
+      const resp = await axiosInstance.get("/users/" + friendId);
+      return resp.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
   const getConversations = useCallback(async () => {
     if (state.user) {
       try {
-        const resp = await axiosInstance.get("/chat");
+        const conversations = await axiosInstance.get("/chat");
+        const conversationsExtended = await Promise.all(
+          conversations.data.map(
+            async (conversation: IConversationExtended) => {
+              const friendId = conversation.members.find(
+                (memberId: string) => memberId !== state.user
+              );
+              let friend = await getFriend(friendId!);
 
-        setConversations(resp.data);
+              if (onlineUsers) {
+                const isOnline = onlineUsers.some((user) => {
+                  return user.userId === friend._id;
+                });
+                if (isOnline) {
+                  friend = { ...friend, online: true };
+                }
+              }
+              return { ...conversation, friend };
+            }
+          )
+        );
+
+        setConversations(conversationsExtended);
       } catch (error) {
         console.log(error);
       }
     }
-  }, [state.user]);
+  }, [state.user, onlineUsers]);
+
+  useEffect(() => {
+    console.log(conversations);
+  }, [conversations]);
 
   const getMessages = useCallback(async () => {
     if (!currentConversation) return;
@@ -167,7 +208,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       );
 
       setMessages(resp.data);
-
       setNewMessage("");
     } catch (error) {
       console.log(error);
@@ -293,20 +333,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         <div className="people-list-header">Open Chats</div>
 
         <ul className="people-list">
-          {conversations && conversations.length > 0
-            ? conversations.map((conversation) => {
-                return (
-                  <Conversation
-                    onlineUsers={onlineUsers}
-                    conversation={conversation}
-                    key={conversation._id}
-                    userId={state.user}
-                    setCurrentConversation={setCurrentConversation}
-                    setCurrentChatPartner={setCurrentChatPartner}
-                  />
-                );
-              })
-            : "no conversations"}
+          {conversations && conversations.length > 0 ? (
+            <Conversation
+              onlineUsers={onlineUsers}
+              conversations={conversations}
+              userId={state.user}
+              setCurrentConversation={setCurrentConversation}
+              setCurrentChatPartner={setCurrentChatPartner}
+            />
+          ) : (
+            "no conversations"
+          )}
         </ul>
       </div>
       {currentConversation ? (
