@@ -36,10 +36,6 @@ interface ISearchedPerson {
   picture: string;
 }
 
-interface IOnlineFriend extends IFriend {
-  online?: boolean;
-}
-
 interface ISocketUser {
   userId: string;
   socketId: string;
@@ -52,6 +48,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchResultRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const messageToSendRef = useRef<HTMLTextAreaElement>(null);
+
   const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
   const [conversations, setConversations] = useState<IConversation[] | []>([]);
   const [currentConversation, setCurrentConversation] =
@@ -62,22 +60,22 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   );
   const [newMessage, setNewMessage] = useState<string>("");
   const [userFilter, setUserFilter] = useState("");
-  const [friends, setFriends] = useState<IOnlineFriend[] | []>([]);
+  const [friends, setFriends] = useState<IFriend[] | []>([]);
   const [onlineUsers, setOnlineUsers] = useState<ISocketUser[] | []>([]);
 
   useEffect(() => {
     if (onlineUsers.length === 0 || friends.length === 0) {
       return;
     }
-    const onlineFriends = friends.map((friend) => {
+
+    let onlineFriends = friends.map((friend) => {
       if (onlineUsers.find((user: any) => user.userId === friend._id)) {
         return { ...friend, online: true };
       }
       return { ...friend, online: false };
     });
-
     setFriends(onlineFriends);
-  }, [onlineUsers, friends]);
+  }, [onlineUsers]);
 
   useEffect(() => {
     if (!socket || !state.user) {
@@ -108,19 +106,18 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     });
   }, [state.user, socket]);
 
-  useEffect(() => {
-    const getFriends = async () => {
-      try {
-        const resp = await axiosInstance.get("/users/friends");
-        setFriends(resp.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    getFriends();
+  const getFriends = useCallback(async () => {
+    try {
+      const resp = await axiosInstance.get("/users/friends");
+      setFriends(resp.data);
+    } catch (error) {
+      console.log(error);
+    }
   }, []);
 
-  useEffect(() => {}, [currentConversation]);
+  useEffect(() => {
+    getFriends();
+  }, []);
 
   const handleSendNewMessage = useCallback(async () => {
     if (!currentConversation) return;
@@ -170,6 +167,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       );
 
       setMessages(resp.data);
+
+      setNewMessage("");
     } catch (error) {
       console.log(error);
     }
@@ -227,7 +226,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       return;
     }
     try {
-      const resp = await axiosInstance.put(`/users/${id}/addfriend`);
+      await axiosInstance.put(`/users/${id}/addfriend`);
+      getFriends();
     } catch (error) {
       console.log(error);
     }
@@ -285,22 +285,19 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
                   >
                     {person.username}
                   </div>
-                  <div
-                    className="chat"
-                    onClick={() => handleOpenChat(person._id)}
-                  >
-                    <FontAwesomeIcon icon={faMessage} />
-                  </div>
                 </li>
               );
             })}
           </ul>
         </div>
+        <div className="people-list-header">Open Chats</div>
+
         <ul className="people-list">
           {conversations && conversations.length > 0
             ? conversations.map((conversation) => {
                 return (
                   <Conversation
+                    onlineUsers={onlineUsers}
                     conversation={conversation}
                     key={conversation._id}
                     userId={state.user}
@@ -364,15 +361,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           <div className="chat-message ">
             <textarea
               name="message-to-send"
-              id="message-to-send"
-              placeholder="Type your message"
+              placeholder="Type your message..."
               rows={3}
               onChange={(e) => setNewMessage(e.target.value)}
               value={newMessage}
             ></textarea>
-
-            <i className="fa fa-file-o"></i>
-            <i className="fa fa-file-image-o"></i>
 
             <button onClick={handleSendNewMessage}>Send</button>
           </div>
@@ -382,7 +375,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           Open a conversation to start chatting!
         </div>
       )}
-      <FriendsBar friends={friends} />
+      <FriendsBar friends={friends} openChat={handleOpenChat} />
     </div>
   );
 };
