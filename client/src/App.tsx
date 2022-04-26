@@ -1,14 +1,14 @@
 import { useContext, useEffect, useState, useCallback } from "react";
-import { axiosInstance } from "./api";
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
+import { axiosInstance } from "./api";
 import { AuthContext } from "./context/AuthContext";
-
 import { Login } from "./pages/Login";
 import { Chat } from "./pages/Chat";
 import { Home } from "./pages/Home";
 import { Loading } from "./components/Loading";
+
 import "./App.css";
 
 function App() {
@@ -25,18 +25,14 @@ function App() {
   }, [state.user]);
 
   const checkAuth = useCallback(async () => {
-    console.log("chechking auth");
-
     try {
       dispatch({ type: "LOGIN_START" });
-
       const resp = await axiosInstance.get("/auth/isloggedin");
       if (resp) {
         dispatch({ type: "LOGIN_SUCCESS", payload: resp.data.id });
       }
     } catch (error) {
       console.log(error);
-
       dispatch({ type: "LOGIN_ERROR", payload: error });
     }
   }, [dispatch]);

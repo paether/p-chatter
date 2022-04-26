@@ -6,8 +6,6 @@ import { verifyMongoIds } from "../../utils/helpers";
 import User from "../../models/User";
 
 const post_new_conversation = async (req: IReqUser, res: Response) => {
-  console.log([req.user.id, req.body.senderId, req.body.receiverId]);
-
   const validIds = verifyMongoIds([
     req.user.id,
     req.body.senderId,

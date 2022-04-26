@@ -43,8 +43,6 @@ const Conversation: React.FC<{
   }, []);
 
   const getExtendedConversations = useCallback(async () => {
-    console.log("getting extended");
-
     const extendedConv: IConversationExtended[] = await Promise.all(
       conversations.map(async (conversation: IConversation) => {
         const friendId = conversation.members.find(

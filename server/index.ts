@@ -38,7 +38,6 @@ let socketUsers: ISocketUser[] = [];
 io.on("connect", (socket: any) => {
   socket.on("newUser", (userId: string) => {
     const addedSocketUsers = addSocketUser(userId, socket.id, socketUsers);
-    console.log("new user", addedSocketUsers);
 
     if (addedSocketUsers) {
       io.emit("getUsers", socketUsers);
@@ -51,7 +50,6 @@ io.on("connect", (socket: any) => {
       const receiver = getSocketUser(receiverId, socketUsers);
 
       if (!receiver) return;
-      console.log("message sent");
 
       io.to(receiver.socketId).emit("getMessage", {
         messageId,
@@ -63,7 +61,6 @@ io.on("connect", (socket: any) => {
 
   socket.on("disconnect", () => {
     socketUsers = removeSocketUser(socket.id, socketUsers);
-    console.log("user left,", socketUsers);
 
     io.emit("getUsers", socketUsers);
   });

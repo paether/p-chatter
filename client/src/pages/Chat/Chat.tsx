@@ -1,10 +1,4 @@
-import React, {
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from "react";
+import { useContext, useEffect, useState, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
@@ -135,8 +129,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const getConversations = useCallback(async () => {
     if (state.user) {
       try {
-        console.log("setting conv");
-
         const conversations = await getConversationsCall();
         setConversations(conversations);
       } catch (error) {
