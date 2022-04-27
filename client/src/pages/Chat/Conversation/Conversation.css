@@ -33,12 +33,17 @@
   text-overflow: ellipsis;
   max-width: 100px;
 }
+.person.active {
+  background-color: #ff8e00b5;
+}
 .people-list .person {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   cursor: pointer;
   width: 100%;
+  padding: 3px;
+  border-radius: 3px;
 }
 .people-list .person:hover .name {
   color: #d95d39;

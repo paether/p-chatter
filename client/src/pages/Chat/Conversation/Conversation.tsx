@@ -19,12 +19,14 @@ interface IConversationExtended {
 
 const Conversation: React.FC<{
   conversations: IConversation[];
+  currentConversation: IConversation | null;
   userId: string;
   setCurrentConversation: Dispatch<SetStateAction<IConversation | null>>;
   setCurrentChatPartner: Dispatch<SetStateAction<IFriend | null>>;
   onlineUsers: ISocketUser[];
 }> = ({
   conversations,
+  currentConversation,
   userId,
   setCurrentConversation,
   setCurrentChatPartner,
@@ -74,7 +76,11 @@ const Conversation: React.FC<{
           return (
             <li
               key={conversation._id}
-              className="person"
+              className={
+                currentConversation?._id === conversation._id
+                  ? "person active"
+                  : "person"
+              }
               onClick={() => {
                 setCurrentConversation(conversation);
                 setCurrentChatPartner(conversation.friend!);

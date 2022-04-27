@@ -39,17 +39,21 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
-  const [conversations, setConversations] = useState<IConversation[] | []>([]);
+  const [conversations, setConversations] = useState<IConversation[]>([]);
+  const [currentConversations, setCurrentConversations] = useState<
+    IConversation[]
+  >([]);
+  const [isCurrentConversations, setIsCurrentConverations] = useState(false);
   const [currentConversation, setCurrentConversation] =
     useState<IConversation | null>(null);
-  const [messages, setMessages] = useState<IMessage[] | []>([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [currentChatPartner, setCurrentChatPartner] = useState<IFriend | null>(
     null
   );
   const [newMessage, setNewMessage] = useState<string>("");
   const [userFilter, setUserFilter] = useState("");
-  const [friends, setFriends] = useState<IFriend[] | []>([]);
-  const [onlineUsers, setOnlineUsers] = useState<ISocketUser[] | []>([]);
+  const [friends, setFriends] = useState<IFriend[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<ISocketUser[]>([]);
 
   useEffect(() => {
     if (onlineUsers.length === 0 || friends.length === 0) {
@@ -62,8 +66,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       }
       return { ...friend, online: false };
     });
+
     setFriends(onlineFriends);
-  }, [onlineUsers, friends]);
+  }, [onlineUsers]);
 
   useEffect(() => {
     if (!socket || !state.user) {
@@ -98,6 +103,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const getFriends = async () => {
     try {
       const friendsResp = await getFriendsCall();
+      console.log("setting friends");
+
       setFriends(friendsResp);
     } catch (error) {
       console.log(error);
@@ -161,6 +168,21 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   useEffect(() => {
     getMessages();
   }, [currentConversation, getMessages]);
+
+  useEffect(() => {
+    console.log("setting current convs");
+
+    if (currentConversation) {
+      if (
+        currentConversations.some(
+          (currConv) => currConv._id === currentConversation._id
+        )
+      ) {
+        return;
+      }
+      setCurrentConversations((prev) => [...prev, currentConversation]);
+    }
+  }, [currentConversation, currentConversations]);
 
   useEffect(() => {
     if (!messagesRef.current) return;
@@ -276,13 +298,32 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
             })}
           </ul>
         </div>
-
+        <div className="people-list-header">Chats</div>
+        <div className="people-list-switcher">
+          <div
+            onClick={() => setIsCurrentConverations(!isCurrentConversations)}
+            className={isCurrentConversations ? "all-chat" : "all-chat active"}
+          >
+            All
+          </div>
+          <div
+            onClick={() => setIsCurrentConverations(!isCurrentConversations)}
+            className={
+              !isCurrentConversations ? "current-chat" : "current-chat active"
+            }
+          >
+            Current
+          </div>
+        </div>
         <ul className="people-list">
           {conversations && conversations.length > 0 ? (
             <Conversation
               onlineUsers={onlineUsers}
-              conversations={conversations}
+              conversations={
+                isCurrentConversations ? currentConversations : conversations
+              }
               userId={state.user}
+              currentConversation={currentConversation}
               setCurrentConversation={setCurrentConversation}
               setCurrentChatPartner={setCurrentChatPartner}
             />
