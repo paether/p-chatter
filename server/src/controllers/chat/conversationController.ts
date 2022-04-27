@@ -30,7 +30,7 @@ const post_new_conversation = async (req: IReqUser, res: Response) => {
       members: { $all: [req.body.senderId, req.body.receiverId] },
     });
     if (exists) {
-      return res.status(400).json("This conversation already exists");
+      return res.json("already exists");
     }
     const newConv = new Conversation({
       members: [req.body.senderId, req.body.receiverId],

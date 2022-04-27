@@ -6,9 +6,10 @@ import React, {
   SetStateAction,
 } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faUser } from "@fortawesome/free-solid-svg-icons";
 
-import { axiosInstance } from "../../../api";
+import { axiosInstance, getFriendCall } from "../../../api";
+import "./Conversation.css";
 
 interface IConversationExtended {
   members: string[];
@@ -33,22 +34,13 @@ const Conversation: React.FC<{
     IConversationExtended[]
   >([]);
 
-  const getFriend = useCallback(async (friendId: string) => {
-    try {
-      const resp = await axiosInstance.get("/users/" + friendId);
-      return resp.data;
-    } catch (error) {
-      console.log(error);
-    }
-  }, []);
-
   const getExtendedConversations = useCallback(async () => {
     const extendedConv: IConversationExtended[] = await Promise.all(
       conversations.map(async (conversation: IConversation) => {
         const friendId = conversation.members.find(
           (memberId: string) => memberId !== userId
         );
-        let friend = await getFriend(friendId!);
+        let friend = await getFriendCall(friendId!);
 
         if (onlineUsers) {
           const isOnline = onlineUsers.some((user) => {
@@ -62,7 +54,7 @@ const Conversation: React.FC<{
       })
     );
     setConversationsExtended(extendedConv);
-  }, [conversations, getFriend, onlineUsers, userId]);
+  }, [conversations, onlineUsers, userId]);
 
   useEffect(() => {
     getExtendedConversations();
@@ -88,10 +80,13 @@ const Conversation: React.FC<{
                 setCurrentChatPartner(conversation.friend!);
               }}
             >
-              <img
-                src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01.jpg"
-                alt="avatar"
-              />
+              <div className="profile-picture">
+                {conversation.friend.picture ? (
+                  <img src={conversation.friend.picture} alt="" />
+                ) : (
+                  <FontAwesomeIcon icon={faUser} />
+                )}
+              </div>
               <div className="about">
                 <div className="name">{conversation.friend!.username}</div>
                 <div className="status">

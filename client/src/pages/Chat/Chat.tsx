@@ -1,10 +1,15 @@
 import { useContext, useEffect, useState, useCallback, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSearch,
+  faUser,
+  faUserPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
 
 import {
   getConversationsCall,
+  getFriendCall,
   getFriendsCall,
   getMessagesCall,
   getUsersCall,
@@ -90,18 +95,18 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.user, socket]);
 
-  const getFriends = useCallback(async () => {
+  const getFriends = async () => {
     try {
-      const friends = await getFriendsCall();
-      setFriends(friends);
+      const friendsResp = await getFriendsCall();
+      setFriends(friendsResp);
     } catch (error) {
       console.log(error);
     }
-  }, []);
+  };
 
   useEffect(() => {
     getFriends();
-  }, [getFriends]);
+  }, []);
 
   const handleSendNewMessage = useCallback(async () => {
     if (!currentConversation) return;
@@ -222,8 +227,23 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const handleOpenChat = async (userId: string) => {
     try {
       await postNewConversationCall(state.user, userId);
+
+      let conversation = conversations.find((conversation) =>
+        conversation.members.includes(userId)
+      );
+
+      if (conversation) {
+        const friendId = conversation.members.find(
+          (memberId: string) => memberId !== state.user
+        );
+        let friend = await getFriendCall(friendId!);
+
+        setCurrentConversation(conversation);
+        setCurrentChatPartner(friend);
+      }
+
       getConversations();
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
     }
   };
@@ -246,18 +266,16 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
             {searchedPeople.map((person) => {
               return (
                 <li key={person._id} className="search-result">
-                  <div
+                  <div className="username">{person.username}</div>
+                  <FontAwesomeIcon
                     onClick={() => addFriend(person._id)}
-                    className="username"
-                  >
-                    {person.username}
-                  </div>
+                    icon={faUserPlus}
+                  />
                 </li>
               );
             })}
           </ul>
         </div>
-        <div className="people-list-header">Open Chats</div>
 
         <ul className="people-list">
           {conversations && conversations.length > 0 ? (
@@ -276,16 +294,18 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       {currentConversation ? (
         <div className="chat-container">
           <div className="chat-header ">
-            <img
-              src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/195612/chat_avatar_01_green.jpg"
-              alt="avatar"
-            />
+            <div className="profile-picture">
+              {currentChatPartner?.picture ? (
+                <img src={currentChatPartner?.picture} alt="" />
+              ) : (
+                <FontAwesomeIcon icon={faUser} />
+              )}
+            </div>
 
             <div className="chat-about">
               <div className="chat-with">
                 Chat with {currentChatPartner?.username}
               </div>
-              <div className="chat-num-messages">already 1 902 messages</div>
             </div>
           </div>
 

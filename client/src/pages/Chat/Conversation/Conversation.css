@@ -1,0 +1,50 @@
+.people-list-container ul li {
+  margin: 10px 0;
+}
+
+.people-list .profile-picture {
+  height: 20px;
+  width: 20px;
+  color: #f8f5e3;
+}
+.people-list .profile-picture svg {
+  height: 20px;
+  width: 20px;
+}
+.about .status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: #92959e;
+  margin-left: auto;
+}
+.person .about {
+  padding-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+.person .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+.people-list .person {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  width: 100%;
+}
+.people-list .person:hover .name {
+  color: #d95d39;
+}
+
+.chat-container .fa-circle {
+  width: 10px;
+  height: 10px;
+}

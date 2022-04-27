@@ -6,7 +6,6 @@ import { axiosInstance } from "./api";
 import { AuthContext } from "./context/AuthContext";
 import { Login } from "./pages/Login";
 import { Chat } from "./pages/Chat";
-import { Home } from "./pages/Home";
 import { Loading } from "./components/Loading";
 
 import "./App.css";
@@ -51,12 +50,15 @@ function App() {
     <Router>
       {/* header */}
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="*"
+          element={state.user ? <Chat socket={socket} /> : <Login />}
+        />
+        {/* <Route path="/login" element={<Login />} />
         <Route
           path="/chat"
           element={state.user ? <Chat socket={socket} /> : <Login />}
-        />
+        /> */}
       </Routes>
     </Router>
   );

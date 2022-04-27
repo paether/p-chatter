@@ -122,3 +122,12 @@ export const postNewConversationCall = async (
     throwError("Get users error", error.response);
   }
 };
+
+export const getFriendCall = async (friendId: string) => {
+  try {
+    const resp = await axiosInstance.get("/users/" + friendId);
+    return resp.data;
+  } catch (error: any) {
+    throwError("Get friend error", error.response);
+  }
+};

@@ -1,11 +1,45 @@
 .friends-bar-container {
   padding: 10px;
+  height: inherit;
+  max-width: 150px;
+}
+.friends-bar-header {
+  background-color: #202c59;
+  color: #f8f5e3;
+  padding: 5px;
+  text-align: center;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  user-select: none;
 }
 
+.friends-list-container {
+  background-color: #202c59;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #f8f5e3;
+  overflow-y: scroll;
+}
 .friends-list-container li {
   list-style: none;
   display: flex;
   gap: 5px;
+  margin: 5px 0;
   justify-content: flex-start;
   align-items: center;
+}
+
+.friends-bar-container li .name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: auto;
+}
+.friends-bar-container li .fa-message {
+  color: #f0a202;
+  align-items: flex-end;
+  cursor: pointer;
+}
+.friends-bar-container li .fa-message:hover {
+  color: #f8f5e3;
 }
