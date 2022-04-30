@@ -6,7 +6,9 @@ export type actionType =
   | { type: "REGISTER_ERROR"; payload: any }
   | { type: "LOGIN_START" }
   | { type: "LOGIN_SUCCESS"; payload: string }
-  | { type: "LOGIN_ERROR"; payload: any };
+  | { type: "LOGIN_ERROR"; payload: any }
+  | { type: "LOGOUT_SUCCESS" }
+  | { type: "LOGOUT_ERROR"; payload: any };
 
 export const AuthReducer = (
   state: AuthState,
@@ -52,6 +54,20 @@ export const AuthReducer = (
       return {
         ...state,
         user: "",
+        isFetching: false,
+        error: action.payload,
+      };
+    case "LOGOUT_SUCCESS":
+      return {
+        ...state,
+        user: "",
+        isFetching: false,
+        error: null,
+      };
+    case "LOGOUT_ERROR":
+      return {
+        ...state,
+        user: state.user,
         isFetching: false,
         error: action.payload,
       };

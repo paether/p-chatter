@@ -13,6 +13,7 @@ import "./App.css";
 function App() {
   const { state, dispatch } = useContext(AuthContext);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (state.user) {
@@ -30,9 +31,11 @@ function App() {
       if (resp) {
         dispatch({ type: "LOGIN_SUCCESS", payload: resp.data.id });
       }
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
       dispatch({ type: "LOGIN_ERROR", payload: error });
+      setIsLoading(false);
     }
   }, [dispatch]);
 
@@ -40,9 +43,9 @@ function App() {
     if (!state.user) {
       checkAuth();
     }
-  }, [checkAuth, state.user]);
+  }, []);
 
-  if (state.isFetching) {
+  if (state.isFetching || isLoading) {
     return <Loading />;
   }
 

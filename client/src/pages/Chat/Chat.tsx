@@ -6,8 +6,10 @@ import {
   faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 
 import {
+  axiosInstance,
   getConversationsCall,
   getFriendCall,
   getFriendsCall,
@@ -29,9 +31,18 @@ interface ISearchedPerson {
   username: string;
   picture: string;
 }
+interface arrivingMessage {
+  senderId: string;
+  receiverId: string;
+  messageId: string;
+  text: string;
+}
 
+interface onlineFriend extends IFriend {
+  online: boolean;
+}
 export const Chat = ({ socket }: { socket: Socket | null }) => {
-  const { state } = useContext(AuthContext);
+  const { state, dispatch } = useContext(AuthContext);
   const messageRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -54,11 +65,23 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [userFilter, setUserFilter] = useState("");
   const [friends, setFriends] = useState<IFriend[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<ISocketUser[]>([]);
+  const [onlineFriends, setOnlineFriends] = useState<onlineFriend[]>([]);
+  const [arrivingMessage, setArrivingMessage] =
+    useState<arrivingMessage | null>(null);
+
+  const navigate = useNavigate();
+
+  const logOut = async () => {
+    try {
+      await axiosInstance.post("/auth/logout");
+      dispatch({ type: "LOGOUT_SUCCESS" });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    if (onlineUsers.length === 0 || friends.length === 0) {
-      return;
-    }
+    console.log("getting friends");
 
     let onlineFriends = friends.map((friend) => {
       if (onlineUsers.find((user: any) => user.userId === friend._id)) {
@@ -67,8 +90,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       return { ...friend, online: false };
     });
 
-    setFriends(onlineFriends);
-  }, [onlineUsers]);
+    setOnlineFriends(onlineFriends);
+  }, [onlineUsers, friends]);
 
   useEffect(() => {
     if (!socket || !state.user) {
@@ -78,32 +101,38 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
     socket.emit("newUser", state.user);
     socket.on("getUsers", (socketUsers) => {
+      console.log(socketUsers);
+
       clearTimeout(onlineStatusTimeout);
 
       onlineStatusTimeout = setTimeout(() => {
         setOnlineUsers(socketUsers);
       }, 2000);
     });
-    socket.on("getMessage", (message) => {
-      if (currentConversation?.members.includes(message.senderId)) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            _id: message.messageId,
-            senderId: message.senderId,
-            text: message.text,
-            createdAt: Date.now(),
-          },
-        ]);
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    socket.on("getMessage", (msg) => setArrivingMessage(msg));
   }, [state.user, socket]);
+
+  useEffect(() => {
+    if (!arrivingMessage) {
+      return;
+    }
+    if (currentConversation?.members.includes(arrivingMessage.senderId)) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          _id: arrivingMessage.messageId,
+          senderId: arrivingMessage.senderId,
+          text: arrivingMessage.text,
+          createdAt: Date.now(),
+        },
+      ]);
+    }
+  }, [arrivingMessage, currentConversation]);
 
   const getFriends = async () => {
     try {
       const friendsResp = await getFriendsCall();
-      console.log("setting friends");
 
       setFriends(friendsResp);
     } catch (error) {
@@ -125,6 +154,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       const receiverId = currentConversation.members.find(
         (member) => member !== state.user
       );
+      console.log(postedMessage._id, "posted msg id");
+
       socket?.emit("sendMessage", {
         senderId: state.user,
         receiverId,
@@ -170,8 +201,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [currentConversation, getMessages]);
 
   useEffect(() => {
-    console.log("setting current convs");
-
     if (currentConversation) {
       if (
         currentConversations.some(
@@ -249,29 +278,37 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const handleOpenChat = async (userId: string) => {
     try {
       await postNewConversationCall(state.user, userId);
-
-      let conversation = conversations.find((conversation) =>
-        conversation.members.includes(userId)
-      );
-
-      if (conversation) {
-        const friendId = conversation.members.find(
-          (memberId: string) => memberId !== state.user
-        );
-        let friend = await getFriendCall(friendId!);
-
-        setCurrentConversation(conversation);
-        setCurrentChatPartner(friend);
-      }
-
-      getConversations();
+      await getConversations();
+      let friend = await getFriendCall(userId);
+      setCurrentChatPartner(friend);
     } catch (error: any) {
       console.log(error);
     }
   };
 
+  useEffect(() => {
+    if (currentChatPartner) {
+      let conversation = conversations.find((conversation) =>
+        conversation.members.includes(currentChatPartner._id)
+      );
+      if (conversation) {
+        if (
+          currentConversation === null ||
+          currentConversation?._id !== conversation?._id
+        ) {
+          setCurrentConversation(conversation);
+        }
+      }
+    }
+  }, [conversations, currentChatPartner]);
+
+  useEffect(() => {
+    console.log(currentConversation);
+  }, [currentConversation]);
+
   return (
     <div className="container">
+      <button onClick={logOut}>logout</button>
       <div className="people-list-container" id="people-list">
         <div className="search" ref={searchRef}>
           <div className="search-container" ref={searchContainerRef}>
@@ -400,7 +437,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           Open a conversation to start chatting!
         </div>
       )}
-      <FriendsBar friends={friends} openChat={handleOpenChat} />
+      <FriendsBar friends={onlineFriends} openChat={handleOpenChat} />
     </div>
   );
 };

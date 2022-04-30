@@ -117,7 +117,7 @@ export const postNewConversationCall = async (
       senderId,
       receiverId,
     });
-    return;
+    return "ok";
   } catch (error: any) {
     throwError("Get users error", error.response);
   }

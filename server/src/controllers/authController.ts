@@ -5,6 +5,13 @@ import bcrypt from "bcrypt";
 import { IUser } from "../models/User";
 import User from "../models/User";
 
+declare module "express-session" {
+  // eslint-disable-next-line no-unused-vars
+  interface Session {
+    socketId: string;
+  }
+}
+
 const post_login = (req: Request, res: Response, next: NextFunction) => {
   try {
     passport.authenticate("local", (err: any, user: any) => {
@@ -16,6 +23,18 @@ const post_login = (req: Request, res: Response, next: NextFunction) => {
       });
       return;
     })(req, res, next);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const post_logout = (req: Request, res: Response) => {
+  try {
+    req.session.destroy(function (err) {
+      if (err) return res.json(err);
+
+      return res.json("Logged out");
+    });
   } catch (error) {
     console.log(error);
   }
@@ -56,4 +75,4 @@ const get_isloggedin = (req: Request, res: Response) => {
   }
 };
 
-module.exports = { post_login, post_register, get_isloggedin };
+module.exports = { post_login, post_register, get_isloggedin, post_logout };

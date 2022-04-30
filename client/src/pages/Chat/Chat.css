@@ -35,6 +35,8 @@
   text-align: center;
   align-items: center;
   background-color: #202c59;
+  border-left: 5px solid #202c59;
+  border-right: 5px solid #202c59;
 
   width: calc(100% - 40px);
   color: white;
