@@ -69,8 +69,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [arrivingMessage, setArrivingMessage] =
     useState<arrivingMessage | null>(null);
 
-  const navigate = useNavigate();
-
   const logOut = async () => {
     try {
       await axiosInstance.post("/auth/logout");
@@ -101,8 +99,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
     socket.emit("newUser", state.user);
     socket.on("getUsers", (socketUsers) => {
-      console.log(socketUsers);
-
       clearTimeout(onlineStatusTimeout);
 
       onlineStatusTimeout = setTimeout(() => {
