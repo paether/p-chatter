@@ -7,7 +7,6 @@ import { AuthContext } from "./context/AuthContext";
 import { Login } from "./pages/Login";
 import { Chat } from "./pages/Chat";
 import { Loading } from "./components/Loading";
-
 import "./App.css";
 
 function App() {
@@ -51,17 +50,11 @@ function App() {
 
   return (
     <Router>
-      {/* header */}
       <Routes>
         <Route
           path="*"
           element={state.user ? <Chat socket={socket} /> : <Login />}
         />
-        {/* <Route path="/login" element={<Login />} />
-        <Route
-          path="/chat"
-          element={state.user ? <Chat socket={socket} /> : <Login />}
-        /> */}
       </Routes>
     </Router>
   );
