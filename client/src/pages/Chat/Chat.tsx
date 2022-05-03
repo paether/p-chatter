@@ -6,7 +6,6 @@ import {
   faUserPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
-import { useNavigate } from "react-router-dom";
 
 import {
   axiosInstance,
@@ -297,7 +296,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   return (
     <div className="container">
-      <button onClick={logOut}>logout</button>
       <div className="people-list-container" id="people-list">
         <div className="search" ref={searchRef}>
           <div className="search-container" ref={searchContainerRef}>
@@ -426,7 +424,12 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           Open a conversation to start chatting!
         </div>
       )}
-      <FriendsBar friends={onlineFriends} openChat={handleOpenChat} />
+
+      <FriendsBar
+        friends={onlineFriends}
+        logOut={logOut}
+        openChat={handleOpenChat}
+      />
     </div>
   );
 };

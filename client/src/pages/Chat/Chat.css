@@ -45,6 +45,7 @@
   width: 100%;
   cursor: pointer;
   opacity: 0.5;
+  border-radius: 3px;
 }
 .people-list-switcher .active {
   background-color: #ff8e00b5;

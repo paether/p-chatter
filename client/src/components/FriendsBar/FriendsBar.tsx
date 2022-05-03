@@ -10,11 +10,19 @@ interface IOnlineFriend extends IFriend {
 interface IFriendsBarProps {
   friends: IOnlineFriend[];
   openChat: (userId: string) => Promise<void>;
+  logOut: () => void;
 }
 
-const FriendsBar: React.FC<IFriendsBarProps> = ({ friends, openChat }) => {
+const FriendsBar: React.FC<IFriendsBarProps> = ({
+  friends,
+  openChat,
+  logOut,
+}) => {
   return (
     <div className="friends-bar-container">
+      <div className="friends-bar-header logout" onClick={logOut}>
+        Sign out
+      </div>
       <div className="friends-bar-header">Friends</div>
       <ul className="friends-list-container">
         {friends
