@@ -44,7 +44,11 @@ io.on("connect", (socket: any) => {
     ({ senderId, receiverId, messageId, text }: ISendMessage) =>
       handleSendMessage(senderId, receiverId, messageId, text, socketUsers)
   );
-  socket.on("disconnect", () => handleDisconnect(socket.id, socketUsers));
+
+  socket.on(
+    "disconnect",
+    () => (socketUsers = handleDisconnect(socket.id, socketUsers))
+  );
 });
 
 server

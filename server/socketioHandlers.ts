@@ -17,6 +17,7 @@ module.exports = (io: Server) => {
     socketUsers: ISocketUser[]
   ) {
     const addedSocketUsers = addSocketUser(userId, socketId, socketUsers);
+
     if (addedSocketUsers) {
       io.emit("getUsers", socketUsers);
     }
@@ -46,6 +47,7 @@ module.exports = (io: Server) => {
   ) {
     socketUsers = removeSocketUser(socketId, socketUsers);
     io.emit("getUsers", socketUsers);
+    return socketUsers;
   };
   return {
     handleNewUser,

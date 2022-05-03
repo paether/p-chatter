@@ -73,14 +73,14 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     try {
       await axiosInstance.post("/auth/logout");
       dispatch({ type: "LOGOUT_SUCCESS" });
+      socket!.emit("disconnect");
+      console.log("disconnected");
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    console.log("getting friends");
-
     let onlineFriends = friends.map((friend) => {
       if (onlineUsers.find((user: any) => user.userId === friend._id)) {
         return { ...friend, online: true };
@@ -150,7 +150,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       const receiverId = currentConversation.members.find(
         (member) => member !== state.user
       );
-      console.log(postedMessage._id, "posted msg id");
 
       socket?.emit("sendMessage", {
         senderId: state.user,
@@ -297,10 +296,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       }
     }
   }, [conversations, currentChatPartner]);
-
-  useEffect(() => {
-    console.log(currentConversation);
-  }, [currentConversation]);
 
   return (
     <div className="container">
