@@ -47,6 +47,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchResultRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
   const [conversations, setConversations] = useState<IConversation[]>([]);
@@ -304,9 +305,16 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               placeholder="search"
               className="search-input"
               onFocus={(e) => handleSearchClicked(e, true)}
+              ref={searchInputRef}
               onChange={(e) => setUserFilter(e.target.value)}
             />
-            <FontAwesomeIcon icon={faSearch} />
+            <FontAwesomeIcon
+              icon={faSearch}
+              onClick={() => {
+                searchInputRef.current?.setSelectionRange(0, 0);
+                searchInputRef.current?.focus();
+              }}
+            />
           </div>
           <ul className="search-result-container" ref={searchResultRef}>
             {searchedPeople.map((person) => {
