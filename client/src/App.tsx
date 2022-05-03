@@ -44,7 +44,7 @@ function App() {
     }
   }, []);
 
-  if (state.isFetching || isLoading) {
+  if (isLoading) {
     return <Loading />;
   }
 

@@ -3,16 +3,15 @@ import passport from "passport";
 
 import getConfig from "./src/config/config";
 import { server, app, io } from "./src/config/server";
-import {
-  addSocketUser,
-  removeSocketUser,
-  getSocketUser,
-} from "./src/utils/helpers";
+
 import initDb from "./src/config/database";
 import appLocalStrategy from "./src/middlewares/passport";
 import usersRouter from "./src/routes/users";
 import authRouter from "./src/routes/auth";
 import chatRouter from "./src/routes/chat";
+
+const { handleNewUser, handleSendMessage, handleDisconnect } =
+  require("./socketioHandlers")(io);
 
 const PORT = getConfig().PORT;
 
@@ -36,34 +35,16 @@ interface ISendMessage {
 let socketUsers: ISocketUser[] = [];
 
 io.on("connect", (socket: any) => {
-  socket.on("newUser", (userId: string) => {
-    const addedSocketUsers = addSocketUser(userId, socket.id, socketUsers);
-
-    if (addedSocketUsers) {
-      io.emit("getUsers", socketUsers);
-    }
-  });
+  socket.on("newUser", (userId: string) =>
+    handleNewUser(userId, socket.id, socketUsers)
+  );
 
   socket.on(
     "sendMessage",
-    ({ senderId, receiverId, messageId, text }: ISendMessage) => {
-      const receiver = getSocketUser(receiverId, socketUsers);
-
-      if (!receiver) return;
-
-      io.to(receiver.socketId).emit("getMessage", {
-        messageId,
-        senderId,
-        text,
-      });
-    }
+    ({ senderId, receiverId, messageId, text }: ISendMessage) =>
+      handleSendMessage(senderId, receiverId, messageId, text, socketUsers)
   );
-
-  socket.on("disconnect", () => {
-    socketUsers = removeSocketUser(socket.id, socketUsers);
-
-    io.emit("getUsers", socketUsers);
-  });
+  socket.on("disconnect", () => handleDisconnect(socket.id, socketUsers));
 });
 
 server
