@@ -73,8 +73,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     try {
       await axiosInstance.post("/auth/logout");
       dispatch({ type: "LOGOUT_SUCCESS" });
-      socket!.emit("disconnect");
-      console.log("disconnected");
     } catch (error) {
       console.log(error);
     }

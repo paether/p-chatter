@@ -34,7 +34,11 @@ interface ISendMessage {
 
 let socketUsers: ISocketUser[] = [];
 
-io.on("connect", (socket: any) => {
+io.on("connection", (socket: any) => {
+  const sessionId = socket.request.session.id;
+
+  socket.join(sessionId);
+
   socket.on("newUser", (userId: string) =>
     handleNewUser(userId, socket.id, socketUsers)
   );

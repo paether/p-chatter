@@ -1,16 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import passport from "passport";
 import bcrypt from "bcrypt";
+import { io } from "../config/server";
 
 import { IUser } from "../models/User";
 import User from "../models/User";
-
-declare module "express-session" {
-  // eslint-disable-next-line no-unused-vars
-  interface Session {
-    socketId: string;
-  }
-}
 
 const post_login = (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -30,9 +24,10 @@ const post_login = (req: Request, res: Response, next: NextFunction) => {
 
 const post_logout = (req: Request, res: Response) => {
   try {
+    const sessionId = req.session.id;
     req.session.destroy(function (err) {
       if (err) return res.json(err);
-
+      io.to(sessionId).disconnectSockets();
       return res.json("Logged out");
     });
   } catch (error) {
