@@ -1,11 +1,10 @@
 import { useContext, useEffect, useState, useCallback } from "react";
-import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 
 import { axiosInstance } from "./api";
 import { AuthContext } from "./context/AuthContext";
-import { Login } from "./pages/Login";
-import { Chat } from "./pages/Chat";
+import AnimatedRoutes from "./components/AnimatedRoutes/AnimatedRoutes";
 import { Loading } from "./components/Loading";
 import "./App.css";
 
@@ -50,12 +49,7 @@ function App() {
 
   return (
     <Router>
-      <Routes>
-        <Route
-          path="*"
-          element={state.user ? <Chat socket={socket} /> : <Login />}
-        />
-      </Routes>
+      <AnimatedRoutes state={state} socket={socket} />
     </Router>
   );
 }

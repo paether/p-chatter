@@ -2,8 +2,7 @@ import { useState, useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import "./Login.css";
 import { loginCall, registerCall } from "../../api";
-import { useNavigate } from "react-router-dom";
-import { actionType } from "../../context/AuthReducer";
+import { motion } from "framer-motion";
 
 export const Login: React.FC = () => {
   const { state, dispatch } = useContext(AuthContext);
@@ -11,7 +10,6 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [isLogin, setIsLogin] = useState(true);
   const buttonContainer = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   const handleButtonTypeHelper = (
     btnElement: HTMLElement,
@@ -82,7 +80,11 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <form
+    <motion.form
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
       onSubmit={(e) => {
         handleLoginRegisterButton(e);
       }}
@@ -119,6 +121,6 @@ export const Login: React.FC = () => {
           {isLogin ? "Register" : "Login"}
         </div>
       </div>
-    </form>
+    </motion.form>
   );
 };

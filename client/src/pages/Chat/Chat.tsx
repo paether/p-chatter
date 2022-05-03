@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch,
@@ -296,7 +297,13 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [conversations, currentChatPartner]);
 
   return (
-    <div className="container">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ x: -100 }}
+      transition={{ duration: 0.5 }}
+      className="container"
+    >
       <div className="people-list-container" id="people-list">
         <div className="search" ref={searchRef}>
           <div className="search-container" ref={searchContainerRef}>
@@ -438,6 +445,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         logOut={logOut}
         openChat={handleOpenChat}
       />
-    </div>
+    </motion.div>
   );
 };
