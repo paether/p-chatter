@@ -10,7 +10,7 @@ import usersRouter from "./src/routes/users";
 import authRouter from "./src/routes/auth";
 import chatRouter from "./src/routes/chat";
 
-const { handleNewUser, handleSendMessage, handleDisconnect } =
+const { handleNewUser, handleSendMessage, handleDisconnect, handleAddFriend } =
   require("./socketioHandlers")(io);
 
 const PORT = getConfig().PORT;
@@ -41,6 +41,10 @@ io.on("connection", (socket: any) => {
 
   socket.on("newUser", (userId: string) =>
     handleNewUser(userId, socket.id, socketUsers)
+  );
+
+  socket.on("addFriend", (userId: string) =>
+    handleAddFriend(userId, socketUsers)
   );
 
   socket.on(

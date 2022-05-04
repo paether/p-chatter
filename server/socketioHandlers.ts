@@ -41,6 +41,16 @@ module.exports = (io: Server) => {
     });
   };
 
+  const handleAddFriend = function (
+    friendId: string,
+    socketUsers: ISocketUser[]
+  ) {
+    const onlineFriend = getSocketUser(friendId, socketUsers);
+
+    if (!onlineFriend) return;
+    io.to(onlineFriend.socketId).emit("getFriends");
+  };
+
   const handleDisconnect = function (
     socketId: string,
     socketUsers: ISocketUser[]
@@ -53,5 +63,6 @@ module.exports = (io: Server) => {
     handleNewUser,
     handleSendMessage,
     handleDisconnect,
+    handleAddFriend,
   };
 };

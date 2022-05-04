@@ -1,10 +1,18 @@
-import { useContext, useEffect, useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+} from "react";
+import { motion } from "framer-motion";
+import moment from "moment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch,
   faUser,
   faUserPlus,
+  faCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
 
@@ -106,6 +114,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     });
 
     socket.on("getMessage", (msg) => setArrivingMessage(msg));
+
+    socket.on("getFriends", getFriends);
   }, [state.user, socket]);
 
   useEffect(() => {
@@ -137,6 +147,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     getFriends();
+    const intervalId = setInterval(() => getMessages(), 60000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleSendNewMessage = useCallback(async () => {
@@ -156,6 +169,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         messageId: postedMessage._id,
         text: newMessage,
       });
+
       setMessages((prev) => [...prev, postedMessage]);
       setNewMessage("");
     } catch (error) {
@@ -248,6 +262,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     try {
       await putAddFriendCall(id);
       getFriends();
+      socket!.emit("addFriend", id);
     } catch (error) {
       console.log(error);
     }
@@ -295,6 +310,13 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       }
     }
   }, [conversations, currentChatPartner]);
+
+  const handleEnterButton = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendNewMessage();
+    }
+  };
 
   return (
     <motion.div
@@ -384,7 +406,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
             <div className="chat-about">
               <div className="chat-with">
-                Chat with {currentChatPartner?.username}
+                Chat with <span> {currentChatPartner?.username}</span>
               </div>
             </div>
           </div>
@@ -410,7 +432,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
                           ? "me"
                           : currentChatPartner!.username
                       }
-                      time={msg.createdAt}
+                      time={moment(msg.createdAt).fromNow()}
                     />
                   </div>
                 );
@@ -424,6 +446,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
           <div className="chat-message ">
             <textarea
+              onKeyDown={handleEnterButton}
               name="message-to-send"
               placeholder="Type your message..."
               rows={3}

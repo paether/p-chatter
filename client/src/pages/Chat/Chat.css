@@ -185,6 +185,10 @@
   width: 50px;
   color: #f8f5e3;
 }
+.chat-header .chat-with span {
+  color: #ff8c00;
+}
+
 .chat-container .chat-header .chat-about {
   padding-left: 10px;
   margin-top: 6px;

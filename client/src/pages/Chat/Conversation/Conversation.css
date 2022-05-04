@@ -34,7 +34,7 @@
   max-width: 100px;
 }
 .person.active {
-  background-color: #ff8e00b5;
+  background-color: #ff8e0069;
 }
 .people-list .person {
   display: flex;
