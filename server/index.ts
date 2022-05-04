@@ -11,14 +11,10 @@ import authRouter from "./src/routes/auth";
 import chatRouter from "./src/routes/chat";
 
 const { handleNewUser, handleSendMessage, handleDisconnect, handleAddFriend } =
-  require("./socketioHandlers")(io);
+  require("./src/socketioHandlers")(io);
 
 const PORT = getConfig().PORT;
-
-appLocalStrategy(passport);
-app.use("/api/users", usersRouter);
-app.use("/api/auth", authRouter);
-app.use("/api/chat", chatRouter);
+let socketUsers: ISocketUser[] = [];
 
 interface ISocketUser {
   userId: string;
@@ -32,7 +28,10 @@ interface ISendMessage {
   text: string;
 }
 
-let socketUsers: ISocketUser[] = [];
+appLocalStrategy(passport);
+app.use("/api/users", usersRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/chat", chatRouter);
 
 io.on("connection", (socket: any) => {
   const sessionId = socket.request.session.id;

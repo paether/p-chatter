@@ -3,7 +3,7 @@ import {
   addSocketUser,
   getSocketUser,
   removeSocketUser,
-} from "./src/utils/helpers";
+} from "./utils/helpers";
 
 interface ISocketUser {
   userId: string;
