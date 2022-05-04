@@ -1,5 +1,7 @@
 import express from "express";
+
 const usersController = require("../controllers/usersController");
+import { multerUpload } from "../config/multer";
 import { checkAuthentication } from "../middlewares/passport";
 
 const router = express.Router();
@@ -9,6 +11,14 @@ router.put(
   "/:id/updatepassword",
   checkAuthentication,
   usersController.put_id_password
+);
+
+//update profile picture
+router.put(
+  "/:id/addpicture",
+  checkAuthentication,
+  multerUpload.single("profileImage"),
+  usersController.post_add_profilePicture
 );
 
 //add friend
