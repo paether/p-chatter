@@ -70,6 +70,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [newMessage, setNewMessage] = useState<string>("");
   const [userFilter, setUserFilter] = useState("");
   const [friends, setFriends] = useState<IFriend[]>([]);
+  const [onlineFriends, setOnlineFriends] = useState<IFriend[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<ISocketUser[]>([]);
   const [arrivingMessage, setArrivingMessage] =
     useState<arrivingMessage | null>(null);
@@ -87,15 +88,16 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (onlineUsers.length === 0) {
       return;
     }
+    console.log(friends);
 
-    let onlineFriends = friends.map((friend) => {
+    let onlineFriends: IFriend[] = friends.map((friend) => {
       if (onlineUsers.find((user: any) => user.userId === friend._id)) {
         return { ...friend, online: true };
       }
-      return { ...friend, online: false };
+      return friend;
     });
 
-    setFriends(onlineFriends);
+    setOnlineFriends(onlineFriends);
   }, [onlineUsers, friends]);
 
   useEffect(() => {
@@ -140,6 +142,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       const friendsResp = await getFriendsCall();
 
       setFriends(friendsResp);
+      setOnlineFriends(friendsResp);
     } catch (error) {
       console.log(error);
     }
@@ -379,7 +382,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         <ul className="people-list">
           {conversations && conversations.length > 0 ? (
             <Conversation
-              onlineFriends={friends}
+              onlineFriends={onlineFriends}
               conversations={
                 isCurrentConversations ? currentConversations : conversations
               }
@@ -463,7 +466,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         </div>
       )}
 
-      <FriendsBar friends={friends} logOut={logOut} openChat={handleOpenChat} />
+      <FriendsBar
+        friends={onlineFriends}
+        logOut={logOut}
+        openChat={handleOpenChat}
+      />
     </motion.div>
   );
 };

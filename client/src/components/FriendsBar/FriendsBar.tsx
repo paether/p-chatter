@@ -3,12 +3,8 @@ import "./FriendsBar.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
 
-interface IOnlineFriend extends IFriend {
-  online?: boolean;
-}
-
 interface IFriendsBarProps {
-  friends: IOnlineFriend[];
+  friends: IFriend[];
   openChat: (userId: string) => Promise<void>;
   logOut: () => void;
 }
@@ -31,7 +27,7 @@ const FriendsBar: React.FC<IFriendsBarProps> = ({
               return [friend, ...acc];
             }
             return [...acc, friend];
-          }, [] as IOnlineFriend[])
+          }, [] as IFriend[])
           .map((friend: any) => {
             return (
               <li key={friend._id} className="friend">

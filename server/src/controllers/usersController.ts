@@ -123,10 +123,14 @@ const get_friends = async (req: IReqUser, res: Response) => {
       user.friends.map((friendId: string) => User.findById(friendId))
     );
 
-    let friendsFiltered: Array<{ _id: string; username: string }> = [];
+    let friendsFiltered: Array<{
+      _id: string;
+      username: string;
+      picture: string;
+    }> = [];
     friends.map((friend) => {
-      const { _id, username } = friend!;
-      friendsFiltered.push({ _id, username });
+      const { _id, username, picture } = friend!;
+      friendsFiltered.push({ _id, username, picture });
     });
     return res.json(friendsFiltered);
   } catch (error) {

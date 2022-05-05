@@ -6,8 +6,8 @@ interface ISocketUser {
 interface IFriend {
   _id: string;
   username: string;
-  picture?: string;
-  online?: boolean;
+  picture: string;
+  online: boolean;
 }
 
 interface IConversation {
@@ -20,7 +20,4 @@ interface IMessage {
   senderId: string;
   text: string;
   createdAt: any;
-}
-interface onlineFriend extends IFriend {
-  online: boolean;
 }
