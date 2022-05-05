@@ -46,9 +46,6 @@ interface arrivingMessage {
   text: string;
 }
 
-interface onlineFriend extends IFriend {
-  online: boolean;
-}
 export const Chat = ({ socket }: { socket: Socket | null }) => {
   const { state, dispatch } = useContext(AuthContext);
   const messageRef = useRef<HTMLDivElement>(null);
@@ -74,7 +71,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [userFilter, setUserFilter] = useState("");
   const [friends, setFriends] = useState<IFriend[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<ISocketUser[]>([]);
-  const [onlineFriends, setOnlineFriends] = useState<onlineFriend[]>([]);
   const [arrivingMessage, setArrivingMessage] =
     useState<arrivingMessage | null>(null);
 
@@ -88,6 +84,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   };
 
   useEffect(() => {
+    if (onlineUsers.length === 0) {
+      return;
+    }
+
     let onlineFriends = friends.map((friend) => {
       if (onlineUsers.find((user: any) => user.userId === friend._id)) {
         return { ...friend, online: true };
@@ -95,7 +95,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       return { ...friend, online: false };
     });
 
-    setOnlineFriends(onlineFriends);
+    setFriends(onlineFriends);
   }, [onlineUsers, friends]);
 
   useEffect(() => {
@@ -379,7 +379,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         <ul className="people-list">
           {conversations && conversations.length > 0 ? (
             <Conversation
-              onlineUsers={onlineUsers}
+              onlineFriends={friends}
               conversations={
                 isCurrentConversations ? currentConversations : conversations
               }
@@ -463,11 +463,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         </div>
       )}
 
-      <FriendsBar
-        friends={onlineFriends}
-        logOut={logOut}
-        openChat={handleOpenChat}
-      />
+      <FriendsBar friends={friends} logOut={logOut} openChat={handleOpenChat} />
     </motion.div>
   );
 };

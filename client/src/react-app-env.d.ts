@@ -21,3 +21,6 @@ interface IMessage {
   text: string;
   createdAt: any;
 }
+interface onlineFriend extends IFriend {
+  online: boolean;
+}
