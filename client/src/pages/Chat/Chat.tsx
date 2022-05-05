@@ -156,7 +156,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, []);
 
   const handleSendNewMessage = useCallback(async () => {
-    if (!currentConversation) return;
+    if (!currentConversation || newMessage.length === 0) return;
     try {
       const postedMessage = await postNewMessageCall(
         currentConversation._id!,
@@ -232,7 +232,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   useEffect(() => {
     if (userFilter.length === 0) {
       setSearchedPeople([]);
-
       return;
     }
     //debouncing input to not make requests until user stops typing
@@ -250,16 +249,12 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     };
   }, [userFilter]);
 
-  const handleSearchClicked = (e: any, clicked: boolean) => {
-    if (clicked) {
-      searchResultRef.current?.classList.add("visible");
-      searchContainerRef.current?.classList.add("active");
-      return;
-    }
+  const handleSearchClicked = () => {
+    searchResultRef.current?.classList.add("visible");
+    searchContainerRef.current?.classList.add("active");
   };
   const addFriend = async (id: string) => {
     if (id === state.user) {
-      alert("cannot add yourself as friend!");
       return;
     }
     try {
@@ -271,9 +266,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
   };
 
-  const hideDropDown = (e: any) => {
-    const target = e.target as HTMLElement;
-    if (!searchRef.current?.contains(target)) {
+  const hideDropDown = (e: MouseEvent) => {
+    if (!searchRef.current?.contains(e.target as Node)) {
       searchResultRef.current?.classList.remove("visible");
       searchContainerRef.current?.classList.remove("active");
     }
@@ -289,8 +283,13 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   const handleOpenChat = async (userId: string) => {
     try {
-      await postNewConversationCall(state.user, userId);
-      await getConversations();
+      let conversationExists = conversations.find((conversation) =>
+        conversation.members.includes(userId)
+      );
+      if (!conversationExists) {
+        await postNewConversationCall(state.user, userId);
+        await getConversations();
+      }
       let friend = await getFriendCall(userId);
       setCurrentChatPartner(friend);
     } catch (error: any) {
@@ -299,6 +298,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   };
 
   useEffect(() => {
+    console.log("currentconv");
+
     if (currentChatPartner) {
       let conversation = conversations.find((conversation) =>
         conversation.members.includes(currentChatPartner._id)
@@ -306,7 +307,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       if (conversation) {
         if (
           currentConversation === null ||
-          currentConversation?._id !== conversation?._id
+          currentConversation._id !== conversation._id
         ) {
           setCurrentConversation(conversation);
         }
@@ -336,7 +337,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               type="text"
               placeholder="search"
               className="search-input"
-              onFocus={(e) => handleSearchClicked(e, true)}
+              onFocus={() => handleSearchClicked()}
               ref={searchInputRef}
               onChange={(e) => setUserFilter(e.target.value)}
             />
