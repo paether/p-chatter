@@ -56,8 +56,6 @@ const Conversation: React.FC<{
     getExtendedConversations();
   }, [conversations, getExtendedConversations]);
 
-  useEffect(() => {}, [conversationsExtended]);
-
   return (
     <>
       {conversationsExtended
