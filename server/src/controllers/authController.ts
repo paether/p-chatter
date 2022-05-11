@@ -8,12 +8,13 @@ import User from "../models/User";
 
 const post_login = (req: Request, res: Response, next: NextFunction) => {
   try {
-    passport.authenticate("local", (err: any, user: any) => {
+    passport.authenticate("local", (err: any, user: IUser) => {
       if (err) throw err;
       if (!user) return res.status(401).json("Unauthorized");
       req.logIn(user, (err) => {
         if (err) throw err;
-        return res.json(user.id);
+        const { _id, username, picture } = user;
+        return res.json({ _id, username, picture });
       });
       return;
     })(req, res, next);

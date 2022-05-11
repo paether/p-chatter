@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useRef } from "react";
+import { useState, useContext, useRef } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import "./Login.css";
 import { loginCall, registerCall } from "../../api";
@@ -36,34 +36,21 @@ export const Login: React.FC = () => {
   ) => {
     e.preventDefault();
     try {
-      if (isLogin) {
-        dispatch({ type: "LOGIN_START" });
-        const resp = await loginCall(username, password);
-        dispatch({ type: "LOGIN_SUCCESS", payload: resp });
-        localStorage.setItem("user", resp);
-      } else {
-        dispatch({ type: "REGISTER_START" });
+      if (!isLogin) {
         await registerCall(username, password);
-        const resp = await loginCall(username, password);
-        dispatch({ type: "REGISTER_SUCCESS", payload: resp });
-        localStorage.setItem("user", resp);
       }
+      dispatch({ type: "LOGIN_START" });
+      const resp = await loginCall(username, password);
+      dispatch({ type: "LOGIN_SUCCESS", payload: resp });
+      localStorage.setItem("user", resp);
     } catch (error: any) {
-      if (isLogin) {
-        dispatch({ type: "LOGIN_ERROR", payload: error });
-        if (error.statusText === "Unauthorized") {
-          alert("Invalid username and/or password");
-        } else {
-          alert("Unknown error occured");
-        }
+      dispatch({ type: "LOGIN_ERROR", payload: error });
+      if (error.statusText === "Unauthorized") {
+        alert("Invalid username and/or password");
+      } else if (error.statusText === "Already existing user") {
+        alert("This username is already taken!");
       } else {
-        dispatch({ type: "REGISTER_ERROR", payload: error });
-        console.log(error);
-        if (error.statusText === "Already existing user") {
-          alert("This username is already taken!");
-        } else {
-          alert("Unknown error occured");
-        }
+        alert("Unknown error occured");
       }
     }
   };

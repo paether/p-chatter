@@ -21,3 +21,10 @@ interface IMessage {
   text: string;
   createdAt: any;
 }
+interface IUser {
+  _id: string;
+  username: string;
+  picture: string;
+  updatedAt?: string;
+  createdAt?: string;
+}

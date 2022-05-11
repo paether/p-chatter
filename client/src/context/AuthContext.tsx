@@ -2,12 +2,18 @@ import React, { createContext, useReducer } from "react";
 import { AuthReducer, actionType } from "./AuthReducer";
 
 const initialState = {
-  user: "",
+  user: null,
   isFetching: false,
   error: null,
 };
 
-export type AuthState = typeof initialState;
+//  export type AuthState = typeof initialState;
+export interface AuthState {
+  user: null | IUser;
+  isFetching: boolean;
+  error: null;
+}
+
 interface Props {
   children: JSX.Element;
 }

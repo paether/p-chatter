@@ -15,13 +15,6 @@
   user-select: none;
   font-weight: 500;
 }
-.friends-bar-header.logout {
-  cursor: pointer;
-  background-color: #802222;
-}
-.friends-bar-header.logout:hover {
-  background-color: #cd2a2a;
-}
 
 .friends-list-container {
   background-color: #202c59;

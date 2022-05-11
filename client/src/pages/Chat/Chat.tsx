@@ -12,7 +12,6 @@ import {
   faSearch,
   faUser,
   faUserPlus,
-  faCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
 
@@ -28,6 +27,7 @@ import {
   putAddFriendCall,
 } from "../../api";
 import FriendsBar from "../../components/FriendsBar";
+import Profile from "../../components/Profile";
 import { AuthContext } from "../../context/AuthContext";
 import Conversation from "./Conversation";
 import { Message } from "./Message";
@@ -163,7 +163,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         newMessage
       );
       const receiverId = currentConversation.members.find(
-        (member) => member !== state.user
+        (member) => member !== state.user!._id
       );
 
       socket?.emit("sendMessage", {
@@ -254,7 +254,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     searchContainerRef.current?.classList.add("active");
   };
   const addFriend = async (id: string) => {
-    if (id === state.user) {
+    if (id === state.user?._id) {
       return;
     }
     try {
@@ -287,7 +287,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         conversation.members.includes(userId)
       );
       if (!conversationExists) {
-        await postNewConversationCall(state.user, userId);
+        await postNewConversationCall(state.user!._id, userId);
         await getConversations();
       }
       let friend = await getFriendCall(userId);
@@ -387,7 +387,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               conversations={
                 isCurrentConversations ? currentConversations : conversations
               }
-              userId={state.user}
+              userId={state.user!._id}
               currentConversation={currentConversation}
               setCurrentConversation={setCurrentConversation}
               setCurrentChatPartner={setCurrentChatPartner}
@@ -422,17 +422,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
                   <div
                     key={msg._id}
                     className={
-                      msg.senderId === state.user
+                      msg.senderId === state.user!._id
                         ? "message-container align-right"
                         : "message-container"
                     }
                     ref={messageRef}
                   >
                     <Message
-                      isRight={msg.senderId === state.user}
+                      isRight={msg.senderId === state.user!._id}
                       message={msg.text}
                       name={
-                        msg.senderId === state.user
+                        msg.senderId === state.user!._id
                           ? "me"
                           : currentChatPartner!.username
                       }
@@ -466,7 +466,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           Open a conversation to start chatting!
         </div>
       )}
-
+      <Profile logOut={logOut} />
       <FriendsBar friends={onlineFriends} openChat={handleOpenChat} />
     </motion.div>
   );
