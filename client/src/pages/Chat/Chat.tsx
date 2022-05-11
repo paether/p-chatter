@@ -467,11 +467,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         </div>
       )}
 
-      <FriendsBar
-        friends={onlineFriends}
-        logOut={logOut}
-        openChat={handleOpenChat}
-      />
+      <FriendsBar friends={onlineFriends} openChat={handleOpenChat} />
     </motion.div>
   );
 };

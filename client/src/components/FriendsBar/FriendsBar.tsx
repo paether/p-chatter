@@ -6,19 +6,11 @@ import { faCircle, faMessage } from "@fortawesome/free-solid-svg-icons";
 interface IFriendsBarProps {
   friends: IFriend[];
   openChat: (userId: string) => Promise<void>;
-  logOut: () => void;
 }
 
-const FriendsBar: React.FC<IFriendsBarProps> = ({
-  friends,
-  openChat,
-  logOut,
-}) => {
+const FriendsBar: React.FC<IFriendsBarProps> = ({ friends, openChat }) => {
   return (
     <div className="friends-bar-container">
-      <div className="friends-bar-header logout" onClick={logOut}>
-        Sign out
-      </div>
       <div className="friends-bar-header">Friends</div>
       <ul className="friends-list-container">
         {friends
