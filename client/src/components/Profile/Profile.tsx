@@ -4,6 +4,7 @@ import {
   faUser,
   faRightFromBracket,
   faPersonBooth,
+  faAngleDoubleDown,
 } from "@fortawesome/free-solid-svg-icons";
 
 import "./Profile.css";
@@ -57,7 +58,7 @@ const Profile: React.FC<Props> = ({ logOut }) => {
           ) : (
             <FontAwesomeIcon icon={faUser} />
           )}
-          <span className="dropdown-caret"></span>
+          <FontAwesomeIcon icon={faAngleDoubleDown} />
         </div>
         <ul ref={dropwDownRef} className="profile-dropdown">
           <li onClick={logOut}>
