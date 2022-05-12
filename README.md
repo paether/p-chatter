@@ -2,13 +2,13 @@
 
 My own implementation of a chat application.
 
-##Features
+## Features
 
 - Login and Register into the app, using passportjs with express cookie sessions for auth.
 - Search for and add users and friends.
 - Real time chatting with socket.io
 
-##Tech stack
+## Tech stack
 
 - TypeScript
 - React
