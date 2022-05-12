@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import ReactDom from "react-dom";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -15,8 +15,8 @@ interface Props {
 }
 
 const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { state } = useContext(AuthContext);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const { state, dispatch } = useContext(AuthContext);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const onFileChange = (e: any) => {
     setSelectedFile(e.target.files[0]);
@@ -28,7 +28,8 @@ const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
     try {
       const formData = new FormData();
       formData.append("profileImage", selectedFile);
-      await putAddProfilePicture(state.user?._id, formData);
+      const picture = await putAddProfilePicture(state.user?._id, formData);
+      dispatch({ type: "UPDATE_USER", payload: { ...state.user, picture } });
     } catch (error) {
       console.log(error);
     }
@@ -52,11 +53,21 @@ const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
           )}
         </div>
         <div className="upload-avatar">
-          <input type="file" onChange={onFileChange} />
+          <label htmlFor="change-avatar-input">Choose a file...</label>
+          <input
+            accept="image/png, image/jpg, image/jpeg"
+            id="change-avatar-input"
+            type="file"
+            onChange={onFileChange}
+          />
+          {selectedFile ? (
+            <div className="selected-file">{selectedFile.name}</div>
+          ) : null}
+
           <button
             disabled={selectedFile ? false : true}
             onClick={handleSubmit}
-            className="change-avatar"
+            className="change-avatar-btn"
           >
             Change Avatar
           </button>

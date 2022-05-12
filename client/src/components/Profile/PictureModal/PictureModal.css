@@ -13,13 +13,14 @@
 
   border: 5px solid #bc732d;
   padding: 30px;
-  border-radius: 5px;
+  border-radius: 10px;
 }
 .change-picture-modal .fa-x {
   position: absolute;
   height: 15px;
   width: 15px;
   border-bottom-left-radius: 5px;
+  border-top-right-radius: 5px;
   padding: 3px;
   background-color: #882121;
   right: 0;
@@ -48,4 +49,47 @@
 
 .change-picture-container.active {
   display: block;
+}
+
+.upload-avatar {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: center;
+}
+.avatar {
+  border: 2px solid #bc732d;
+  border-radius: 10px;
+  padding: 10px;
+}
+.upload-avatar input {
+  display: none;
+}
+.change-avatar-btn,
+.upload-avatar label {
+  margin: 0;
+  font-size: 1rem;
+
+  cursor: pointer;
+  color: #fff;
+  background: #bc732d;
+  border: none;
+  padding: 5px;
+  border-radius: 4px;
+  border-bottom: 4px solid #a25106;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.selected-file {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.change-avatar:hover {
+  color: black;
+}
+.change-avatar-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -45,7 +45,7 @@ const put_add_profilePicture = async (req: IReqUser, res: Response) => {
         picture: url + "/" + req.file?.path,
       }
     );
-    res.json("Profile image uploaded!");
+    res.json({ picture: url + "/" + req.file?.path });
   } catch (error) {
     console.log(error);
   }

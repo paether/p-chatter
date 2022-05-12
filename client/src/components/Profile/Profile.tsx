@@ -60,22 +60,17 @@ const Profile: React.FC<Props> = ({ logOut }) => {
           <span className="dropdown-caret"></span>
         </div>
         <ul ref={dropwDownRef} className="profile-dropdown">
-          <li>
-            <div onClick={logOut} className="logout">
-              Sign Out
-            </div>
+          <li onClick={logOut}>
+            <div className="logout">Sign Out</div>
             <FontAwesomeIcon icon={faRightFromBracket} />
           </li>
-          <li>
-            <div
-              onClick={() => {
-                setShowModal(true);
-                setShowDropDown(false);
-              }}
-              className="change-picture"
-            >
-              Change avatar
-            </div>
+          <li
+            onClick={() => {
+              setShowModal(true);
+              setShowDropDown(false);
+            }}
+          >
+            <div className="change-picture">Change avatar</div>
             <FontAwesomeIcon icon={faPersonBooth} />
           </li>
         </ul>

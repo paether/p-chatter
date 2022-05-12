@@ -141,8 +141,7 @@ export const putAddProfilePicture = async (
       `users/${userId}/addpicture`,
       formData
     );
-
-    return resp.data;
+    return resp.data.picture;
   } catch (error: any) {
     throwError("Get users error", error.response);
   }
