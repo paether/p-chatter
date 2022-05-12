@@ -6,13 +6,15 @@
   margin: 5px;
   color: #202c59;
   font-size: 16px;
+  z-index: 1;
 }
 .profile-container ul {
   display: none;
 }
 
 .profile-header > svg,
-.profile-header > div {
+.profile-header > div,
+.profile-header > img {
   vertical-align: middle;
   position: relative;
   width: 20px;

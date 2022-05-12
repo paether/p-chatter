@@ -18,7 +18,7 @@ router.put(
   "/:id/addpicture",
   checkAuthentication,
   multerUpload.single("profileImage"),
-  usersController.post_add_profilePicture
+  usersController.put_add_profilePicture
 );
 
 //add friend

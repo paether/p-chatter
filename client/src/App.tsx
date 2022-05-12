@@ -27,7 +27,7 @@ function App() {
       dispatch({ type: "LOGIN_START" });
       const resp = await axiosInstance.get("/auth/isloggedin");
       if (resp) {
-        dispatch({ type: "LOGIN_SUCCESS", payload: resp.data.id });
+        dispatch({ type: "LOGIN_SUCCESS", payload: resp.data });
       }
       setIsLoading(false);
     } catch (error) {

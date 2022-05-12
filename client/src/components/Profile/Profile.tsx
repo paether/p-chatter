@@ -79,8 +79,8 @@ const Profile: React.FC<Props> = ({ logOut }) => {
             <FontAwesomeIcon icon={faPersonBooth} />
           </li>
         </ul>
+        <PictureModal isOpen={showModal} onClose={() => setShowModal(false)} />
       </div>
-      <PictureModal isOpen={showModal} onClose={() => setShowModal(false)} />
     </>
   );
 };

@@ -35,12 +35,14 @@ const put_id_password = async (req: IReqUser, res: Response) => {
   }
 };
 
-const post_add_profilePicture = async (req: IReqUser, res: Response) => {
+const put_add_profilePicture = async (req: IReqUser, res: Response) => {
+  const url = req.protocol + "://" + req.get("host");
+
   try {
     await User.findByIdAndUpdate(
       { _id: req.user.id },
       {
-        picture: req.file?.path,
+        picture: url + "/" + req.file?.path,
       }
     );
     res.json("Profile image uploaded!");
@@ -193,7 +195,7 @@ const get_users = async (req: IRegexUser, res: Response) => {
 module.exports = {
   get_all_conversation,
   put_id_password,
-  post_add_profilePicture,
+  put_add_profilePicture,
   put_add_friend,
   delete_remove_friend,
   get_friends,

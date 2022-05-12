@@ -1,14 +1,40 @@
 .change-picture-modal {
-  display: block;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
   position: fixed;
   top: 50%;
   left: 50%;
+  z-index: 2;
   transform: translate(-50%, -50%);
-  background-color: #fff;
-}
+  background-color: #202c59;
 
+  border: 5px solid #bc732d;
+  padding: 30px;
+  border-radius: 5px;
+}
+.change-picture-modal .fa-x {
+  position: absolute;
+  height: 15px;
+  width: 15px;
+  border-bottom-left-radius: 5px;
+  padding: 3px;
+  background-color: #882121;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+}
+.change-picture-modal .fa-user,
+.change-picture-modal img {
+  height: 50px;
+  width: 50px;
+}
 .overlay {
   position: fixed;
+
+  z-index: 1;
   top: 0;
   left: 0;
   right: 0;

@@ -32,7 +32,7 @@ const AnimatedRoutes = ({
           element={state.user ? <Navigate to="/chat" /> : <Login />}
         />
         <Route
-          path="*"
+          path="/"
           element={state.user ? <Navigate to="/chat" /> : <Login />}
         />
       </Routes>

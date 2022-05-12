@@ -88,7 +88,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (onlineUsers.length === 0) {
       return;
     }
-    console.log(friends);
 
     let onlineFriends: IFriend[] = friends.map((friend) => {
       if (onlineUsers.find((user: any) => user.userId === friend._id)) {
@@ -298,8 +297,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   };
 
   useEffect(() => {
-    console.log("currentconv");
-
     if (currentChatPartner) {
       let conversation = conversations.find((conversation) =>
         conversation.members.includes(currentChatPartner._id)

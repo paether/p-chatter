@@ -1,5 +1,7 @@
 if (process.env.NODE_ENV !== "production") require("dotenv").config();
 import passport from "passport";
+import path from "path";
+import express from "express";
 
 import getConfig from "./src/config/config";
 import { server, app, io } from "./src/config/server";
@@ -32,6 +34,7 @@ appLocalStrategy(passport);
 app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/chat", chatRouter);
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 io.on("connection", (socket: any) => {
   const sessionId = socket.request.session.id;

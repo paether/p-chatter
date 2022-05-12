@@ -19,7 +19,11 @@ const sessionMiddleware = session({
   cookie: { maxAge: 60 * 60 * 10000, httpOnly: true },
 });
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -131,3 +131,19 @@ export const getFriendCall = async (friendId: string) => {
     throwError("Get friend error", error.response);
   }
 };
+
+export const putAddProfilePicture = async (
+  userId: string,
+  formData: FormData
+) => {
+  try {
+    const resp = await axiosInstance.put(
+      `users/${userId}/addpicture`,
+      formData
+    );
+
+    return resp.data;
+  } catch (error: any) {
+    throwError("Get users error", error.response);
+  }
+};

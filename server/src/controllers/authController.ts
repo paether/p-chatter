@@ -63,9 +63,14 @@ const post_register = async (req: Request, res: Response) => {
   }
 };
 
-const get_isloggedin = (req: Request, res: Response) => {
+interface IsLoggedInRequest extends Request {
+  user: IUser;
+}
+
+const get_isloggedin = (req: IsLoggedInRequest, res: Response) => {
   if (req.isAuthenticated()) {
-    return res.json(req.user);
+    const { _id, username, picture } = req.user;
+    return res.json({ _id, username, picture });
   } else {
     return res.json(false);
   }
