@@ -8,7 +8,7 @@ import User from "../models/User";
 
 const post_login = (req: Request, res: Response, next: NextFunction) => {
   try {
-    passport.authenticate("local", (err: any, user: IUser) => {
+    passport.authenticate("local", (err: any, user: typeof req.user) => {
       if (err) throw err;
       if (!user) return res.status(401).json("Unauthorized");
       req.logIn(user, (err) => {
@@ -63,12 +63,7 @@ const post_register = async (req: Request, res: Response) => {
   }
 };
 
-interface IsLoggedInRequest extends Request {
-  user: IUser;
-  isAuthenticated: any;
-}
-
-const get_isloggedin = (req: IsLoggedInRequest, res: Response) => {
+const get_isloggedin = (req: Request, res: Response) => {
   if (req.isAuthenticated()) {
     const { _id, username, picture } = req.user;
     return res.json({ _id, username, picture });

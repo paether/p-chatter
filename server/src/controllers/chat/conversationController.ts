@@ -1,19 +1,19 @@
-import { Response } from "express";
-import Conversation from "../../models/Conversation";
-import IReqUser from "../../interfaces/userInterface";
+import { Response, Request } from "express";
 
-import { verifyMongoIds } from "../../utils/helpers";
+import Conversation from "../../models/Conversation";
 import User from "../../models/User";
 
-const post_new_conversation = async (req: IReqUser, res: Response) => {
+import { verifyMongoIds } from "../../utils/helpers";
+
+const post_new_conversation = async (req: Request, res: Response) => {
   const validIds = verifyMongoIds([
-    req.user.id,
+    req.user!.id,
     req.body.senderId,
     req.body.receiverId,
   ]);
   if (!validIds) return res.status(400).json("Invalid values");
 
-  if (req.user.id !== req.body.senderId)
+  if (req.user!.id !== req.body.senderId)
     return res.status(401).json("Unauthorized");
 
   try {
@@ -45,12 +45,12 @@ const post_new_conversation = async (req: IReqUser, res: Response) => {
   }
 };
 
-const get_all_conversation = async (req: IReqUser, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id]);
+const get_all_conversation = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id]);
   if (!validIds) return res.status(400).json("Invalid values");
   try {
     const conv = await Conversation.find({
-      members: { $in: [req.user.id] },
+      members: { $in: [req.user!.id] },
     });
     return res.json(conv);
   } catch (error) {
@@ -60,14 +60,14 @@ const get_all_conversation = async (req: IReqUser, res: Response) => {
   }
 };
 
-const get_conversation = async (req: IReqUser, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id, req.body.conversationId]);
+const get_conversation = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id, req.body.conversationId]);
   if (!validIds) return res.status(400).json("Invalid values");
 
   try {
     const conv = await Conversation.findOne({
       _id: req.body.conversationId,
-      members: { $in: [req.user.id] },
+      members: { $in: [req.user!.id] },
     });
     if (!conv) {
       return res.status(400).json("Cannot get that conversation");

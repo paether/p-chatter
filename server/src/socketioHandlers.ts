@@ -1,14 +1,11 @@
 import { Server } from "socket.io";
+
+import { ISocketUser } from "chatter-interfaces";
 import {
   addSocketUser,
   getSocketUser,
   removeSocketUser,
 } from "./utils/helpers";
-
-interface ISocketUser {
-  userId: string;
-  socketId: string;
-}
 
 module.exports = (io: Server) => {
   const handleNewUser = function (

@@ -1,27 +1,27 @@
 /* eslint-disable no-unreachable */
 
-import { Response } from "express";
+import { Response, Request } from "express";
 
 import Conversation from "../../models/Conversation";
 import Message from "../../models/Message";
-import { verifyMongoIds } from "../../utils/helpers";
-import IReqUser from "../../interfaces/userInterface";
 
-const post_add_message = async (req: IReqUser, res: Response) => {
+import { verifyMongoIds } from "../../utils/helpers";
+
+const post_add_message = async (req: Request, res: Response) => {
   const validIds = verifyMongoIds([req.user!.id, req.params.id]);
   if (!validIds) return res.status(400).json("Invalid values");
 
   try {
     const conv = await Conversation.findOne({
       _id: req.params.id,
-      members: { $in: [req.user.id] },
+      members: { $in: [req.user!.id] },
     });
     if (!conv) {
       return res.status(400).json("Cannot get that conversation");
     }
     const message = new Message({
       conversationId: req.params.id,
-      senderId: req.user.id,
+      senderId: req.user!.id,
       text: req.body.text,
     });
     const savedMessage = await message.save();
@@ -31,8 +31,8 @@ const post_add_message = async (req: IReqUser, res: Response) => {
   }
 };
 
-const get_messages = async (req: IReqUser, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id, req.params.id]);
+const get_messages = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id, req.params.id]);
   if (!validIds) return res.status(400).json("Invalid values");
 
   try {

@@ -1,29 +1,17 @@
-import { Response } from "express";
+import { Response, Request } from "express";
 import bcrypt from "bcrypt";
 
-import IReqUser from "../interfaces/userInterface";
 import User from "../models/User";
 import { IUser } from "../models/User";
 import Conversation from "../models/Conversation";
 import { verifyMongoIds } from "../utils/helpers";
 
-interface ISpecUserId extends IReqUser {
-  query: {
-    specUserId: string;
-  };
-}
-interface IRegexUser extends IReqUser {
-  query: {
-    username: string;
-  };
-}
-
-const put_id_password = async (req: IReqUser, res: Response) => {
+const put_id_password = async (req: Request, res: Response) => {
   if (req.body.password) {
     try {
       const hashedPass = await bcrypt.hash(req.body.password, 10);
       await User.findByIdAndUpdate(
-        { _id: req.user.id },
+        { _id: req.user!.id },
         {
           password: hashedPass,
         }
@@ -35,12 +23,12 @@ const put_id_password = async (req: IReqUser, res: Response) => {
   }
 };
 
-const put_add_profilePicture = async (req: IReqUser, res: Response) => {
+const put_add_profilePicture = async (req: Request, res: Response) => {
   const url = req.protocol + "://" + req.get("host");
 
   try {
     await User.findByIdAndUpdate(
-      { _id: req.user.id },
+      { _id: req.user!.id },
       {
         picture: url + "/" + req.file?.path,
       }
@@ -51,11 +39,11 @@ const put_add_profilePicture = async (req: IReqUser, res: Response) => {
   }
 };
 
-const put_add_friend = async (req: IReqUser, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id, req.params.id]);
+const put_add_friend = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id, req.params.id]);
   if (!validIds) return res.status(400).json("Invalid values");
 
-  if (req.user.id === req.params.id) {
+  if (req.user!.id === req.params.id) {
     return res.status(403).json("Cannot add same user as friend");
   } else {
     try {
@@ -63,18 +51,18 @@ const put_add_friend = async (req: IReqUser, res: Response) => {
       if (!addFriend) {
         return res.status(400);
       }
-      const user = await User.findById({ _id: req.user.id });
+      const user = await User.findById({ _id: req.user!.id });
       if (!user) {
         return res.status(400);
       }
       if (!user.friends.includes(req.params.id)) {
         await User.updateOne(
-          { _id: req.user.id },
+          { _id: req.user!.id },
           { $push: { friends: req.params.id } }
         );
         await User.updateOne(
           { _id: req.params.id },
-          { $push: { friends: req.user.id } }
+          { $push: { friends: req.user!.id } }
         );
         return res.json("User added as friend!");
       } else {
@@ -85,22 +73,22 @@ const put_add_friend = async (req: IReqUser, res: Response) => {
     }
   }
 };
-const delete_remove_friend = async (req: IReqUser, res: Response) => {
-  if (req.user.id !== req.body.id) {
+const delete_remove_friend = async (req: Request, res: Response) => {
+  if (req.user!.id !== req.body.id) {
     try {
       const removeFriend = await User.findById({ _id: req.body.id });
       if (!removeFriend) {
         return res.status(404).json("The to-be-removed friend does not exist");
       }
-      const user = await User.findById({ _id: req.user.id });
+      const user = await User.findById({ _id: req.user!.id });
       if (user!.friends.includes(req.body.id)) {
         await User.updateOne(
-          { _id: req.user.id },
+          { _id: req.user!.id },
           { $pull: { friends: req.body.id } }
         );
         await User.updateOne(
           { _id: req.body.id },
-          { $pull: { friends: req.user.id } }
+          { $pull: { friends: req.user!.id } }
         );
         return res.json("User removed as friend!");
       } else {
@@ -115,9 +103,9 @@ const delete_remove_friend = async (req: IReqUser, res: Response) => {
   }
 };
 
-const get_friends = async (req: IReqUser, res: Response) => {
+const get_friends = async (req: Request, res: Response) => {
   try {
-    const user = await User.findById({ _id: req.user.id });
+    const user = await User.findById({ _id: req.user!.id });
     if (!user) {
       return res.status(400);
     }
@@ -142,12 +130,12 @@ const get_friends = async (req: IReqUser, res: Response) => {
   }
 };
 
-const get_all_conversation = async (req: IReqUser, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id]);
+const get_all_conversation = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id]);
   if (!validIds) return res.status(400).json("Invalid values");
   try {
     const conv = await Conversation.find({
-      members: { $in: [req.user.id] },
+      members: { $in: [req.user!.id] },
     });
     return res.json(conv);
   } catch (error) {
@@ -155,8 +143,8 @@ const get_all_conversation = async (req: IReqUser, res: Response) => {
   }
 };
 
-const get_specific_user = async (req: ISpecUserId, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id, req.params.id]);
+const get_specific_user = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id, req.params.id]);
   if (!validIds) return res.status(400).json("Invalid values");
   try {
     const user = await User.findById(req.params.id);
@@ -170,8 +158,8 @@ const get_specific_user = async (req: ISpecUserId, res: Response) => {
   }
 };
 
-const get_users = async (req: IRegexUser, res: Response) => {
-  const validIds = verifyMongoIds([req.user.id]);
+const get_users = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id]);
   if (!validIds) return res.status(400).json("Invalid values");
   try {
     const users = await User.find({

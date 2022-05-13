@@ -3,6 +3,7 @@ import passport from "passport";
 import path from "path";
 import express from "express";
 
+import { ISocketUser, ISendMessage } from "chatter-interfaces";
 import getConfig from "./src/config/config";
 import { server, app, io } from "./src/config/server";
 
@@ -17,18 +18,6 @@ const { handleNewUser, handleSendMessage, handleDisconnect, handleAddFriend } =
 
 const PORT = getConfig().PORT;
 let socketUsers: ISocketUser[] = [];
-
-interface ISocketUser {
-  userId: string;
-  socketId: string;
-}
-
-interface ISendMessage {
-  senderId: string;
-  receiverId: string;
-  messageId: string;
-  text: string;
-}
 
 appLocalStrategy(passport);
 app.use("/api/users", usersRouter);
@@ -48,7 +37,6 @@ io.on("connection", (socket: any) => {
 
   socket.on("newUser", (userId: string) => {
     handleNewUser(userId, socket.id, socketUsers);
-    console.log(socketUsers);
   });
 
   socket.on("addFriend", (userId: string) =>

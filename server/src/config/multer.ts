@@ -1,23 +1,21 @@
 /* eslint-disable no-unused-vars */
 import multer, { FileFilterCallback } from "multer";
-import { Express } from "express";
+import { Express, Request } from "express";
 import { v4 as uuidv4 } from "uuid";
-
-import IReqUser from "../interfaces/userInterface";
 
 type DestinationCallback = (error: Error | null, destination: string) => void;
 type FileNameCallback = (error: Error | null, filename: string) => void;
 
 const fileStorage = multer.diskStorage({
   destination: function (
-    req: IReqUser,
+    req: Request,
     file: Express.Multer.File,
     cb: DestinationCallback
   ) {
     cb(null, "./uploads/");
   },
   filename: function (
-    req: IReqUser,
+    req: Request,
     file: Express.Multer.File,
     cb: FileNameCallback
   ) {
@@ -26,7 +24,7 @@ const fileStorage = multer.diskStorage({
 });
 
 const fileFilter = (
-  req: IReqUser,
+  req: Request,
   file: Express.Multer.File,
   cb: FileFilterCallback
 ) => {
