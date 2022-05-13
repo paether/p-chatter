@@ -65,6 +65,7 @@ const post_register = async (req: Request, res: Response) => {
 
 interface IsLoggedInRequest extends Request {
   user: IUser;
+  isAuthenticated: any;
 }
 
 const get_isloggedin = (req: IsLoggedInRequest, res: Response) => {

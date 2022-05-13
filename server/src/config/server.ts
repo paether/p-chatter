@@ -10,7 +10,7 @@ import { Server } from "socket.io";
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  cors: { origin: "http://localhost:3000", credentials: true },
+  cors: { origin: "https://p-chatter.herokuapp.com", credentials: true },
 });
 const sessionMiddleware = session({
   secret: "r8q,+&1LM3)CD*zAGpx1xm{NeQ",
@@ -24,7 +24,7 @@ app.use(
     crossOriginResourcePolicy: false,
   })
 );
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: "https://p-chatter.herokuapp.com", credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);

@@ -35,6 +35,11 @@ app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/chat", chatRouter);
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+app.use(express.static(path.join(__dirname, "/client/build")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "/client/build", "index.html"));
+});
 
 io.on("connection", (socket: any) => {
   const sessionId = socket.request.session.id;
