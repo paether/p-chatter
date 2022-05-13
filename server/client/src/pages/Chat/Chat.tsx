@@ -103,9 +103,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (!socket || !state.user) {
       return;
     }
+    console.log(socket);
     let onlineStatusTimeout: any;
 
-    socket.emit("newUser", state.user);
+    socket.emit("newUser", state.user._id);
     socket.on("getUsers", (socketUsers) => {
       clearTimeout(onlineStatusTimeout);
 
@@ -166,7 +167,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       );
 
       socket?.emit("sendMessage", {
-        senderId: state.user,
+        senderId: state.user?._id,
         receiverId,
         messageId: postedMessage._id,
         text: newMessage,

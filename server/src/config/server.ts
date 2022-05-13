@@ -4,7 +4,7 @@ import express from "express";
 import passport from "passport";
 import helmet from "helmet";
 import { createServer } from "http";
-import cors from "cors";
+// import cors from "cors";
 import { Server } from "socket.io";
 
 const app = express();
@@ -19,12 +19,8 @@ const sessionMiddleware = session({
   cookie: { maxAge: 60 * 60 * 10000, httpOnly: true },
 });
 
-app.use(
-  helmet({
-    crossOriginResourcePolicy: false,
-  })
-);
-app.use(cors({ origin: "https://p-chatter.herokuapp.com", credentials: true }));
+app.use(helmet());
+// app.use(cors({ origin: "https://p-chatter.herokuapp.com", credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);

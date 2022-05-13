@@ -46,9 +46,10 @@ io.on("connection", (socket: any) => {
 
   socket.join(sessionId);
 
-  socket.on("newUser", (userId: string) =>
-    handleNewUser(userId, socket.id, socketUsers)
-  );
+  socket.on("newUser", (userId: string) => {
+    handleNewUser(userId, socket.id, socketUsers);
+    console.log(socketUsers);
+  });
 
   socket.on("addFriend", (userId: string) =>
     handleAddFriend(userId, socketUsers)
