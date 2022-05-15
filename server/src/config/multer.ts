@@ -42,7 +42,7 @@ const fileFilter = (
 const multerUpload = multer({
   storage: fileStorage,
   limits: {
-    fileSize: 1024 ** 2 * 5,
+    fileSize: 1024 ** 2 * 2,
   },
   fileFilter,
 });

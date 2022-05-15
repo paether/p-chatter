@@ -15,7 +15,7 @@ function App() {
 
   useEffect(() => {
     if (state.user) {
-      const newSocket: Socket = io("https://p-chatter.herokuapp.com/", {
+      const newSocket: Socket = io("http://localhost:8800/", {
         withCredentials: true,
       });
       setSocket(newSocket);

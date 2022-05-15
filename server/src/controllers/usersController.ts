@@ -1,10 +1,32 @@
+/* eslint-disable no-unused-vars */
+
 import { Response, Request } from "express";
 import bcrypt from "bcrypt";
-
+import { Dropbox, Error, files } from "dropbox";
+import fs from "fs";
+import path from "path";
 import User from "../models/User";
 import { IUser } from "../models/User";
 import Conversation from "../models/Conversation";
 import { verifyMongoIds } from "../utils/helpers";
+
+declare global {
+  namespace Express {
+    interface User {
+      id: string;
+      _id: string;
+      username: string;
+      picture: string;
+      query: {
+        specUserId: string;
+        username: string;
+      };
+      params: {
+        id: string;
+      };
+    }
+  }
+}
 
 const put_id_password = async (req: Request, res: Response) => {
   if (req.body.password) {
@@ -25,6 +47,30 @@ const put_id_password = async (req: Request, res: Response) => {
 
 const put_add_profilePicture = async (req: Request, res: Response) => {
   const url = req.protocol + "://" + req.get("host");
+  const dbx = new Dropbox({ accessToken: process.env.DROPBOX_TOKEN });
+  console.log(path.join(global.appRoot, "/" + req.file?.path));
+
+  fs.readFile(
+    path.join(global.appRoot, "/" + req.file?.path),
+    (err, contents) => {
+      if (err) {
+        console.log("Error: ", err);
+      }
+
+      // This uploads basic.js to the root of your dropbox
+      dbx
+        .filesUpload({
+          path: "/" + req.file!.filename,
+          contents,
+        })
+        .then((response: any) => {
+          console.log(response);
+        })
+        .catch((uploadErr: Error<files.UploadError>) => {
+          console.log(uploadErr);
+        });
+    }
+  );
 
   try {
     await User.findByIdAndUpdate(

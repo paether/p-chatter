@@ -18,6 +18,7 @@ const { handleNewUser, handleSendMessage, handleDisconnect, handleAddFriend } =
 
 const PORT = getConfig().PORT;
 let socketUsers: ISocketUser[] = [];
+global.appRoot = path.resolve(__dirname);
 
 appLocalStrategy(passport);
 app.use("/api/users", usersRouter);

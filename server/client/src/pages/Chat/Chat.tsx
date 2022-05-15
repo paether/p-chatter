@@ -103,7 +103,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (!socket || !state.user) {
       return;
     }
-    console.log(socket);
     let onlineStatusTimeout: any;
 
     socket.emit("newUser", state.user._id);

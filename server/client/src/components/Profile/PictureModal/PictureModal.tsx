@@ -30,7 +30,11 @@ const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
       formData.append("profileImage", selectedFile);
       const picture = await putAddProfilePicture(state.user?._id, formData);
       dispatch({ type: "UPDATE_USER", payload: { ...state.user, picture } });
-    } catch (error) {
+    } catch (error: any) {
+      if (error.statusText.includes("File too large")) {
+        alert("Maximum file size for avatar is 2MB!");
+        return;
+      }
       console.log(error);
     }
   };
