@@ -33,7 +33,6 @@ app.get("*", (req, res) => {
 
 io.on("connection", (socket: any) => {
   const sessionId = socket.request.session.id;
-
   socket.join(sessionId);
 
   socket.on("newUser", (userId: string) => {

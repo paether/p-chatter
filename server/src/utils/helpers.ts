@@ -1,3 +1,5 @@
+import { ISocketUser } from "chatter-interfaces";
+
 const verifyMongoIds = (ids: Array<string>): boolean => {
   const mongoRegEx = new RegExp("^[0-9a-fA-F]{24}$");
   return ids.every((id) => {
@@ -5,10 +7,6 @@ const verifyMongoIds = (ids: Array<string>): boolean => {
   });
 };
 
-interface ISocketUser {
-  userId: string;
-  socketId: string;
-}
 const addSocketUser = (
   userId: string,
   socketId: string,
