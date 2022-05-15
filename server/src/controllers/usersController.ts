@@ -46,40 +46,32 @@ const put_id_password = async (req: Request, res: Response) => {
 };
 
 const put_add_profilePicture = async (req: Request, res: Response) => {
-  const url = req.protocol + "://" + req.get("host");
   const dbx = new Dropbox({ accessToken: process.env.DROPBOX_TOKEN });
-  console.log(path.join(global.appRoot, "/" + req.file?.path));
+  console.log(req);
 
-  fs.readFile(
-    path.join(global.appRoot, "/" + req.file?.path),
-    (err, contents) => {
-      if (err) {
-        console.log("Error: ", err);
-      }
-
-      // This uploads basic.js to the root of your dropbox
-      dbx
-        .filesUpload({
-          path: "/" + req.file!.filename,
-          contents,
-        })
-        .then((response: any) => {
-          console.log(response);
-        })
-        .catch((uploadErr: Error<files.UploadError>) => {
-          console.log(uploadErr);
-        });
-    }
+  let url = "";
+  const nodeFileData = fs.readFileSync(
+    path.join(global.appRoot, "/" + req.file?.path)
   );
-
   try {
+    const dbxFileUploadData = await dbx.filesUpload({
+      path: "/" + req.file!.filename,
+      contents: nodeFileData,
+    });
+
+    const dbxSharingLinkData = await dbx.sharingCreateSharedLinkWithSettings({
+      path: dbxFileUploadData.result.id,
+      settings: { allow_download: true },
+    });
+
+    url = dbxSharingLinkData.result.url.replace("dl=0", "dl=1");
     await User.findByIdAndUpdate(
       { _id: req.user!.id },
       {
-        picture: url + "/" + req.file?.path,
+        picture: url,
       }
     );
-    res.json({ picture: url + "/" + req.file?.path });
+    res.json({ picture: url });
   } catch (error) {
     console.log(error);
   }

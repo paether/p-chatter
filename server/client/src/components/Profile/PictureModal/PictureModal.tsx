@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+
 import ReactDom from "react-dom";
 import classNames from "classnames";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,7 +7,7 @@ import { faX, faUser } from "@fortawesome/free-solid-svg-icons";
 
 import "./PictureModal.css";
 import { AuthContext } from "../../../context/AuthContext";
-
+import { Loading } from "../../Loading";
 import { putAddProfilePicture } from "../../../api";
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const { state, dispatch } = useContext(AuthContext);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isPictureUploading, setIsPictureUploading] = useState(false);
 
   const onFileChange = (e: any) => {
     setSelectedFile(e.target.files[0]);
@@ -26,11 +28,15 @@ const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
     if (!selectedFile || !state.user) return;
 
     try {
+      setIsPictureUploading(true);
       const formData = new FormData();
       formData.append("profileImage", selectedFile);
       const picture = await putAddProfilePicture(state.user?._id, formData);
       dispatch({ type: "UPDATE_USER", payload: { ...state.user, picture } });
+      setIsPictureUploading(false);
     } catch (error: any) {
+      setIsPictureUploading(false);
+
       if (error.statusText.includes("File too large")) {
         alert("Maximum file size for avatar is 2MB!");
         return;
@@ -50,10 +56,14 @@ const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
       <div className="change-picture-modal">
         <FontAwesomeIcon onClick={onClose} icon={faX} />
         <div className="avatar">
-          {state.user!.picture ? (
-            <img src={state.user!.picture} alt="" />
+          {!isPictureUploading ? (
+            state.user!.picture ? (
+              <img src={state.user!.picture} alt="" />
+            ) : (
+              <FontAwesomeIcon icon={faUser} />
+            )
           ) : (
-            <FontAwesomeIcon icon={faUser} />
+            <Loading />
           )}
         </div>
         <div className="upload-avatar">
