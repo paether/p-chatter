@@ -10,7 +10,7 @@ import { Server } from "socket.io";
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  cors: { origin: "http://localhost:3000", credentials: true },
+  cors: { origin: process.env.SERVER_URL, credentials: true },
 });
 const sessionMiddleware = session({
   secret: "r8q,+&1LM3)CD*zAGpx1xm{NeQ",
@@ -19,8 +19,15 @@ const sessionMiddleware = session({
   cookie: { maxAge: 60 * 60 * 10000, httpOnly: true },
 });
 
-app.use(helmet());
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      "img-src": ["'self'", "https: data:"],
+    },
+  })
+);
+app.use(cors({ origin: process.env.SERVER_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
