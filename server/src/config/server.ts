@@ -10,7 +10,7 @@ import { Server } from "socket.io";
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  cors: { origin: process.env.SERVER_URL, credentials: true },
+  cors: { origin: process.env.CLIENT_URL, credentials: true },
 });
 const sessionMiddleware = session({
   secret: "r8q,+&1LM3)CD*zAGpx1xm{NeQ",
@@ -27,7 +27,7 @@ app.use(
     },
   })
 );
-app.use(cors({ origin: process.env.SERVER_URL, credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);

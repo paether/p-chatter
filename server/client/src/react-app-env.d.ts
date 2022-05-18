@@ -3,11 +3,16 @@ interface ISocketUser {
   userId: string;
   socketId: string;
 }
+
+interface IUnreadMsg {
+  [id: string]: number;
+}
 interface IFriend {
   _id: string;
   username: string;
   picture: string;
   online: boolean;
+  unread?: number;
 }
 
 interface IConversation {
@@ -27,4 +32,16 @@ interface IUser {
   picture: string;
   updatedAt?: string;
   createdAt?: string;
+}
+
+interface ISearchedPerson {
+  _id: string;
+  username: string;
+  picture: string;
+}
+interface arrivingMessage {
+  senderId: string;
+  receiverId: string;
+  messageId: string;
+  text: string;
 }

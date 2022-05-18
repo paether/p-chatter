@@ -10,9 +10,7 @@ import { faCircle, faUser } from "@fortawesome/free-solid-svg-icons";
 
 import "./Conversation.css";
 
-interface IConversationExtended {
-  members: string[];
-  _id: string;
+interface IConversationExtended extends IConversation {
   friend: IFriend | undefined;
 }
 
@@ -89,6 +87,7 @@ const Conversation: React.FC<{
               </div>
               <div className="about">
                 <div className="name">{conversation.friend?.username}</div>
+
                 <div className="status">
                   <FontAwesomeIcon
                     className={

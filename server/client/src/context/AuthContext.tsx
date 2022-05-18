@@ -7,7 +7,6 @@ const initialState = {
   error: null,
 };
 
-//  export type AuthState = typeof initialState;
 export interface AuthState {
   user: null | IUser;
   isFetching: boolean;

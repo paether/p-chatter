@@ -45,11 +45,6 @@ export default function appLocalStrategy(passport: any) {
   });
   passport.deserializeUser((id: string, done: any) => {
     User.findOne({ _id: id }, (err: any, user: IUser) => {
-      // const userInformation = {
-      //   username: user.username,
-      //   picture: user.picture,
-      //   id: user.id,
-      // };
       done(err, user);
     });
   });

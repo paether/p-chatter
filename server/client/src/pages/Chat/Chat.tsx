@@ -31,23 +31,11 @@ import Profile from "../../components/Profile";
 import { AuthContext } from "../../context/AuthContext";
 import Conversation from "./Conversation";
 import { Message } from "./Message";
-
 import "./Chat.css";
-
-interface ISearchedPerson {
-  _id: string;
-  username: string;
-  picture: string;
-}
-interface arrivingMessage {
-  senderId: string;
-  receiverId: string;
-  messageId: string;
-  text: string;
-}
 
 export const Chat = ({ socket }: { socket: Socket | null }) => {
   const { state, dispatch } = useContext(AuthContext);
+
   const messageRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
@@ -74,6 +62,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [onlineUsers, setOnlineUsers] = useState<ISocketUser[]>([]);
   const [arrivingMessage, setArrivingMessage] =
     useState<arrivingMessage | null>(null);
+  const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
 
   const logOut = async () => {
     try {
@@ -133,6 +122,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           createdAt: Date.now(),
         },
       ]);
+      setArrivingMessage(null);
+      setUnreadMsgs((prevState) => ({
+        ...prevState,
+        [arrivingMessage.senderId]: 0,
+      }));
+    } else {
+      setUnreadMsgs((prevState) => ({
+        ...prevState,
+        [arrivingMessage.senderId]:
+          unreadMsgs[arrivingMessage.senderId] + 1 || 1,
+      }));
     }
   }, [arrivingMessage, currentConversation]);
 
@@ -219,6 +219,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       ) {
         return;
       }
+      console.log("updating current convs");
+
       setCurrentConversations((prev) => [...prev, currentConversation]);
     }
   }, [currentConversation, currentConversations]);
@@ -465,7 +467,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       )}
       <div className="user-container">
         <Profile logOut={logOut} />
-        <FriendsBar friends={onlineFriends} openChat={handleOpenChat} />
+        <FriendsBar
+          unreadMsgs={unreadMsgs}
+          friends={onlineFriends}
+          openChat={handleOpenChat}
+        />
       </div>
     </motion.div>
   );
