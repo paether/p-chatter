@@ -13,7 +13,7 @@ const io = new Server(server, {
   cors: { origin: process.env.CLIENT_URL, credentials: true },
 });
 const sessionMiddleware = session({
-  secret: "r8q,+&1LM3)CD*zAGpx1xm{NeQ",
+  secret: process.env.COOKIE_SECRET!,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 60 * 60 * 10000, httpOnly: true },
@@ -31,7 +31,7 @@ app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionMiddleware);
-app.use(cookieParser("r8q,+&1LM3)CD*zAGpx1xm{NeQ"));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(passport.initialize());
 app.use(passport.session());
 
