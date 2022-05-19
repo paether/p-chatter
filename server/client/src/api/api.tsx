@@ -4,7 +4,7 @@ export const axiosInstance = axios.create({
   baseURL:
     process.env.NODE_ENV === "development"
       ? "http://localhost:8800/api"
-      : "https://https://p-chatter.herokuapp.com/api",
+      : "https://p-chatter.herokuapp.com/api",
   withCredentials: true,
 });
 

@@ -18,7 +18,7 @@ function App() {
       const newSocket: Socket = io(
         process.env.NODE_ENV === "development"
           ? "http://localhost:8800"
-          : "https://https://p-chatter.herokuapp.com",
+          : "https://p-chatter.herokuapp.com",
         {
           withCredentials: true,
         }
