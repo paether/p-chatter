@@ -74,6 +74,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   };
 
   useEffect(() => {
+    // a seperate onlinefriends state had to be created to handle both new online users from socketio and new friends added live
     if (onlineUsers.length === 0) {
       return;
     }
@@ -89,6 +90,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [onlineUsers, friends]);
 
   useEffect(() => {
+    //handle socket.io events
     if (!socket || !state.user) {
       return;
     }
@@ -109,7 +111,22 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [state.user, socket]);
 
   useEffect(() => {
+    //update UI based on message arriving from socket.io based on which conversation is currently active
     if (!arrivingMessage) {
+      const unreadFriend = currentConversation?.members.find(
+        (member) => member !== state.user?._id
+      );
+      if (
+        unreadFriend &&
+        unreadMsgs.hasOwnProperty(unreadFriend) &&
+        unreadMsgs[unreadFriend] !== 0
+      ) {
+        setUnreadMsgs((prevState) => ({
+          ...prevState,
+          [unreadFriend]: 0,
+        }));
+      }
+
       return;
     }
     if (currentConversation?.members.includes(arrivingMessage.senderId)) {
@@ -122,13 +139,12 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           createdAt: Date.now(),
         },
       ]);
-    } else {
-      setUnreadMsgs((prevState) => ({
-        ...prevState,
-        [arrivingMessage.senderId]:
-          prevState[arrivingMessage.senderId] + 1 || 1,
-      }));
+      return;
     }
+    setUnreadMsgs((prevState) => ({
+      ...prevState,
+      [arrivingMessage.senderId]: prevState[arrivingMessage.senderId] + 1 || 1,
+    }));
     setArrivingMessage(null);
   }, [arrivingMessage, currentConversation]);
 

@@ -3,6 +3,7 @@ import { AuthContext } from "../../context/AuthContext";
 import "./Login.css";
 import { loginCall, registerCall } from "../../api";
 import { motion } from "framer-motion";
+import { Loading } from "../../components/Loading";
 
 export const Login: React.FC = () => {
   const { state, dispatch } = useContext(AuthContext);
@@ -66,6 +67,10 @@ export const Login: React.FC = () => {
     );
   };
 
+  if (state.isFetching) {
+    return <Loading />;
+  }
+
   return (
     <motion.form
       initial={{ opacity: 0 }}
@@ -94,18 +99,13 @@ export const Login: React.FC = () => {
         id="password"
       />
       <div className="button-container login" ref={buttonContainer}>
-        <button className="front">
-          {state.isFetching ? <LoadingCircle /> : "Log In"}
-        </button>
-        <button className="back">
-          {state.isFetching ? <LoadingCircle /> : "Register"}
-        </button>
+        <button className="front">Log In</button>
+        <button className="back">Register</button>
       </div>
 
       <div className="login-bottom">
-        <div className="forgot">Forgot password</div>
         <div onClick={handleButtonType} className="register">
-          {isLogin ? "Register" : "Login"}
+          {isLogin ? "Switch to Register" : "Switch to Login"}
         </div>
       </div>
     </motion.form>
