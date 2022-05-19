@@ -219,7 +219,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       ) {
         return;
       }
-      console.log("updating current convs");
 
       setCurrentConversations((prev) => [...prev, currentConversation]);
     }
