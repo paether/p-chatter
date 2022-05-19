@@ -4,7 +4,10 @@ import { Response, Request } from "express";
 import bcrypt from "bcrypt";
 import { Dropbox, Error, files } from "dropbox";
 import fs from "fs";
+import axios from "axios";
+import qs from "qs";
 import path from "path";
+
 import User from "../models/User";
 import { IUser } from "../models/User";
 import Conversation from "../models/Conversation";
@@ -46,14 +49,28 @@ const put_id_password = async (req: Request, res: Response) => {
 };
 
 const put_add_profilePicture = async (req: Request, res: Response) => {
-  const dbx = new Dropbox({ accessToken: process.env.DROPBOX_TOKEN });
-  console.log(req);
-
-  let url = "";
-  const nodeFileData = fs.readFileSync(
-    path.join(global.appRoot, "/" + req.file?.path)
-  );
   try {
+    let url = "";
+    const nodeFileData = fs.readFileSync(
+      path.join(global.appRoot, "/" + req.file?.path)
+    );
+    const data = qs.stringify({
+      grant_type: "refresh_token",
+      refresh_token:
+        "lUGrm_GOGu8AAAAAAAAAAXUKrC3bCcOFKIL3Az8jvWglmtxBG6XpfYKNnQbmrWMZ",
+    });
+    const resp = await axios({
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      url: "https://api.dropboxapi.com/oauth2/token",
+      method: "POST",
+      auth: {
+        username: "s9sekvxlbqymmqa",
+        password: "hjhqhfecf0kae6n",
+      },
+      data,
+    });
+
+    const dbx = new Dropbox({ accessToken: resp.data.access_token });
     const dbxFileUploadData = await dbx.filesUpload({
       path: "/" + req.file!.filename,
       contents: nodeFileData,
@@ -64,7 +81,7 @@ const put_add_profilePicture = async (req: Request, res: Response) => {
       settings: { allow_download: true },
     });
 
-    url = dbxSharingLinkData.result.url.replace("dl=0", "dl=1");
+    url = dbxSharingLinkData.result.url.replace("dl=0", "raw=1");
     await User.findByIdAndUpdate(
       { _id: req.user!.id },
       {
