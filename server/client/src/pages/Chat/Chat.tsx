@@ -122,18 +122,14 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           createdAt: Date.now(),
         },
       ]);
-      setArrivingMessage(null);
-      setUnreadMsgs((prevState) => ({
-        ...prevState,
-        [arrivingMessage.senderId]: 0,
-      }));
     } else {
       setUnreadMsgs((prevState) => ({
         ...prevState,
         [arrivingMessage.senderId]:
-          unreadMsgs[arrivingMessage.senderId] + 1 || 1,
+          prevState[arrivingMessage.senderId] + 1 || 1,
       }));
     }
+    setArrivingMessage(null);
   }, [arrivingMessage, currentConversation]);
 
   const getFriends = async () => {
@@ -149,9 +145,13 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     getFriends();
+    document.addEventListener("mousedown", hideDropDown);
     const intervalId = setInterval(() => getMessages(), 60000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("mousedown", hideDropDown);
+    };
   }, []);
 
   const handleSendNewMessage = useCallback(async () => {
@@ -250,10 +250,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     };
   }, [userFilter]);
 
-  const handleSearchClicked = () => {
-    searchResultRef.current?.classList.add("visible");
-    searchContainerRef.current?.classList.add("active");
-  };
   const addFriend = async (id: string) => {
     if (id === state.user?._id) {
       return;
@@ -263,37 +259,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       getFriends();
       socket!.emit("addFriend", id);
     } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const hideDropDown = (e: MouseEvent) => {
-    if (!searchRef.current?.contains(e.target as Node)) {
-      searchResultRef.current?.classList.remove("visible");
-      searchContainerRef.current?.classList.remove("active");
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", hideDropDown);
-
-    return () => {
-      document.removeEventListener("mousedown", hideDropDown);
-    };
-  }, []);
-
-  const handleOpenChat = async (userId: string) => {
-    try {
-      let conversationExists = conversations.find((conversation) =>
-        conversation.members.includes(userId)
-      );
-      if (!conversationExists) {
-        await postNewConversationCall(state.user!._id, userId);
-        await getConversations();
-      }
-      let friend = await getFriendCall(userId);
-      setCurrentChatPartner(friend);
-    } catch (error: any) {
       console.log(error);
     }
   };
@@ -313,11 +278,39 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       }
     }
   }, [conversations, currentChatPartner]);
-
+  const handleSearchClicked = () => {
+    searchResultRef.current?.classList.add("visible");
+    searchContainerRef.current?.classList.add("active");
+  };
+  const hideDropDown = (e: MouseEvent) => {
+    if (!searchRef.current?.contains(e.target as Node)) {
+      searchResultRef.current?.classList.remove("visible");
+      searchContainerRef.current?.classList.remove("active");
+    }
+  };
   const handleEnterButton = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendNewMessage();
+    }
+  };
+  const handleOpenChat = async (userId: string) => {
+    try {
+      let conversationExists = conversations.find((conversation) =>
+        conversation.members.includes(userId)
+      );
+      if (!conversationExists) {
+        await postNewConversationCall(state.user!._id, userId);
+        await getConversations();
+      }
+      let friend = await getFriendCall(userId);
+      setUnreadMsgs((prevState) => ({
+        ...prevState,
+        [userId]: 0,
+      }));
+      setCurrentChatPartner(friend);
+    } catch (error: any) {
+      console.log(error);
     }
   };
 

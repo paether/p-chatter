@@ -180,6 +180,11 @@
   background-color: #0d1a49;
 }
 
+.chat-header .profile-picture {
+  max-height: 50px;
+  max-width: 50px;
+}
+
 .chat-header .profile-picture svg,
 .chat-header .profile-picture img {
   height: 50px;
