@@ -29,9 +29,19 @@
   list-style: none;
   display: flex;
   gap: 5px;
-  margin: 5px 0;
+  margin: 2px 0;
   justify-content: flex-start;
   align-items: center;
+  position: relative;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 3px;
+}
+.friends-list-container li:hover {
+  background-color: #354580dd;
+}
+.friends-list-container li:hover .name {
+  color: #d95d39;
 }
 
 .friends-bar-container li .name {
@@ -44,7 +54,24 @@
   color: #f0a202;
   align-items: flex-end;
   cursor: pointer;
+  position: relative;
+  height: 16px;
+  width: 16px;
 }
-.friends-bar-container li .fa-message:hover {
-  color: #f8f5e3;
+
+.unread {
+  display: flex;
+  user-select: none;
+  margin: 5px 0 0 0;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #f60000;
+  width: 18px;
+  height: 18px;
+  border-radius: 100%;
+  font-size: 10px;
+  font-weight: bold;
 }

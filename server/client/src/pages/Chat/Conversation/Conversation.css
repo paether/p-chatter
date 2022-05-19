@@ -1,5 +1,5 @@
 .people-list-container ul li {
-  margin: 10px 0;
+  margin: 5px 0;
 }
 
 .people-list .profile-picture {
@@ -36,6 +36,9 @@
 }
 .person.active {
   background-color: #ff8e0069;
+}
+.person:hover {
+  background-color: #354580dd;
 }
 .people-list .person {
   display: flex;

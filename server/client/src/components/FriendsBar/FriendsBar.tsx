@@ -27,24 +27,26 @@ const FriendsBar: React.FC<IFriendsBarProps> = ({
           }, [] as IFriend[])
           .map((friend: IFriend) => {
             return (
-              <li key={friend._id} className="friend">
+              <li
+                key={friend._id}
+                onClick={() => openChat(friend._id)}
+                className="friend"
+              >
                 <div className="name">{friend.username}</div>
-                {unreadMsgs[friend._id] ? (
-                  <div className="name">{unreadMsgs[friend._id]}</div>
-                ) : null}
-                {friend.unread ? (
-                  <div className="name">{friend.unread}</div>
-                ) : null}
 
                 <FontAwesomeIcon
                   className={friend.online ? "online status" : "offline status"}
                   icon={faCircle}
                 />
 
-                <FontAwesomeIcon
-                  onClick={() => openChat(friend._id)}
-                  icon={faMessage}
-                />
+                <FontAwesomeIcon icon={faMessage} />
+                {unreadMsgs[friend._id] ? (
+                  <span className="unread">
+                    {unreadMsgs[friend._id] > 10
+                      ? "10+"
+                      : unreadMsgs[friend._id]}
+                  </span>
+                ) : null}
               </li>
             );
           })}
