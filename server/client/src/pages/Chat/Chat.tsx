@@ -25,6 +25,7 @@ import {
   postNewConversationCall,
   postNewMessageCall,
   putAddFriendCall,
+  putUpdateUnread,
 } from "../../api";
 import FriendsBar from "../../components/FriendsBar";
 import Profile from "../../components/Profile";
@@ -64,6 +65,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
 
+  useEffect(() => {
+    console.table(state.user?.unread);
+  }, [state.user]);
+
   const logOut = async () => {
     try {
       await axiosInstance.post("/auth/logout");
@@ -94,6 +99,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (!socket || !state.user) {
       return;
     }
+    let unreads: { [id: string]: number } = {};
+    if (state.user?.unread) {
+      Object.keys(state.user?.unread).forEach((key: string) => {
+        unreads[key] = state.user?.unread[key]!;
+      });
+    }
+
+    setUnreadMsgs((prevState) => ({
+      ...prevState,
+      ...unreads,
+    }));
     let onlineStatusTimeout: ReturnType<typeof setTimeout>;
 
     socket.emit("newUser", state.user._id);
@@ -111,41 +127,60 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [state.user, socket]);
 
   useEffect(() => {
-    //update UI based on message arriving from socket.io based on which conversation is currently active
-    if (!arrivingMessage) {
-      const unreadFriend = currentConversation?.members.find(
-        (member) => member !== state.user?._id
-      );
-      if (
-        unreadFriend &&
-        unreadMsgs.hasOwnProperty(unreadFriend) &&
-        unreadMsgs[unreadFriend] !== 0
-      ) {
+    async function handleArrivingMessage() {
+      //update UI based on message arriving from socket.io based on which conversation is currently active
+      if (!arrivingMessage) {
+        const unreadFriend = currentConversation?.members.find(
+          (member) => member !== state.user?._id
+        );
+        if (
+          unreadFriend &&
+          unreadMsgs.hasOwnProperty(unreadFriend) &&
+          unreadMsgs[unreadFriend] !== 0
+        ) {
+          await putUpdateUnread(state.user!._id, unreadFriend, 0);
+          setUnreadMsgs((prevState) => ({
+            ...prevState,
+            [unreadFriend]: 0,
+          }));
+        }
+
+        return;
+      }
+      if (currentConversation?.members.includes(arrivingMessage.senderId)) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            _id: arrivingMessage.messageId,
+            senderId: arrivingMessage.senderId,
+            text: arrivingMessage.text,
+            createdAt: arrivingMessage.createdAt,
+          },
+        ]);
+        setArrivingMessage(null);
+        return;
+      }
+      try {
+        await putUpdateUnread(
+          state.user!._id,
+          arrivingMessage.senderId,
+          unreadMsgs[arrivingMessage.senderId] + 1 || 1
+        );
         setUnreadMsgs((prevState) => ({
           ...prevState,
-          [unreadFriend]: 0,
+          [arrivingMessage.senderId]:
+            prevState[arrivingMessage.senderId] + 1 || 1,
         }));
+
+        setArrivingMessage(null);
+      } catch (error) {
+        console.log(error);
       }
 
-      return;
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }
-    if (currentConversation?.members.includes(arrivingMessage.senderId)) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          _id: arrivingMessage.messageId,
-          senderId: arrivingMessage.senderId,
-          text: arrivingMessage.text,
-          createdAt: arrivingMessage.createdAt,
-        },
-      ]);
-      return;
-    }
-    setUnreadMsgs((prevState) => ({
-      ...prevState,
-      [arrivingMessage.senderId]: prevState[arrivingMessage.senderId] + 1 || 1,
-    }));
-    setArrivingMessage(null);
+    handleArrivingMessage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arrivingMessage, currentConversation]);
 
   const getFriends = async () => {
@@ -165,11 +200,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     const intervalId = setInterval(() => getMessages(), 60000);
 
     return () => {
-      console.log("clearing");
-
       clearInterval(intervalId);
       document.removeEventListener("mousedown", hideDropDown);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSendNewMessage = useCallback(async () => {
@@ -295,6 +329,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversations, currentChatPartner]);
   const handleSearchClicked = () => {
     searchResultRef.current?.classList.add("visible");
@@ -322,6 +357,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         await getConversations();
       }
       let friend = await getFriendCall(userId);
+
+      await putUpdateUnread(state.user!._id, userId, 0);
+
       setUnreadMsgs((prevState) => ({
         ...prevState,
         [userId]: 0,

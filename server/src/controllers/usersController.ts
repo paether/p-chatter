@@ -20,6 +20,7 @@ declare global {
       _id: string;
       username: string;
       picture: string;
+      unread?: string;
       query: {
         specUserId: string;
         username: string;
@@ -126,6 +127,49 @@ const put_add_friend = async (req: Request, res: Response) => {
     } catch (error) {
       return res.status(500).json(error);
     }
+  }
+};
+const put_update_unread = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id, req.body.friendId]);
+  if (!validIds) return res.status(400).json("Invalid values");
+
+  if (!Number.isInteger(req.body.count)) {
+    return res.status(403).json("Invalid counter");
+  }
+  try {
+    const user = await User.findById({ _id: req.user!.id });
+    if (user) {
+      let data = { ...user.unread, [req.body.friendId]: req.body.count };
+
+      await User.updateOne(
+        { _id: req.user!.id },
+        {
+          $set: {
+            unread: data,
+          },
+        }
+      );
+    }
+    return res.json("updated");
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json(error);
+  }
+};
+
+const get_unread = async (req: Request, res: Response) => {
+  const validIds = verifyMongoIds([req.user!.id]);
+  if (!validIds) return res.status(400).json("Invalid values");
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(400);
+    }
+    const { unread } = user;
+    return res.json({ unread });
+  } catch (error) {
+    return res.status(500).json(error);
   }
 };
 const delete_remove_friend = async (req: Request, res: Response) => {
@@ -236,6 +280,8 @@ const get_users = async (req: Request, res: Response) => {
   }
 };
 module.exports = {
+  put_update_unread,
+  get_unread,
   get_all_conversation,
   put_id_password,
   put_add_profilePicture,
