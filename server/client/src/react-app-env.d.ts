@@ -24,7 +24,7 @@ interface IMessage {
   conversationId?: string;
   senderId: string;
   text: string;
-  createdAt: any;
+  createdAt: string;
 }
 interface IUser {
   _id: string;
@@ -39,9 +39,10 @@ interface ISearchedPerson {
   username: string;
   picture: string;
 }
-interface arrivingMessage {
+interface IArrivingMessage {
   senderId: string;
   receiverId: string;
   messageId: string;
   text: string;
+  createdAt: string;
 }

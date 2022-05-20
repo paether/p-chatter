@@ -31,7 +31,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "/client/build", "index.html"));
 });
 
-io.on("connection", (socket: any) => {
+io.on("connection", (socket) => {
   const sessionId = socket.request.session.id;
   socket.join(sessionId);
 

@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from "express";
 
 import User from "../models/User";
 import { IUser } from "../models/User";
+import passport from "passport";
 
 const localStrategy = passportLocal.Strategy;
 
@@ -19,31 +20,33 @@ export function checkAuthentication(
   }
 }
 
-export default function appLocalStrategy(passport: any) {
+export default function appLocalStrategy(passport: passport.PassportStatic) {
   try {
     passport.use(
-      new localStrategy((username: string, password: string, done: any) => {
-        User.findOne({ username }, (err: any, user: IUser) => {
-          if (err) throw err;
-          if (!user) return done(null, false);
-
-          bcrypt.compare(password, user.password, (err, result) => {
+      new localStrategy(
+        (username: string, password: string, done: Function) => {
+          User.findOne({ username }, (err: any, user: IUser) => {
             if (err) throw err;
-            if (result) {
-              return done(null, user);
-            }
-            return done(null, false);
+            if (!user) return done(null, false);
+
+            bcrypt.compare(password, user.password, (err, result) => {
+              if (err) throw err;
+              if (result) {
+                return done(null, user);
+              }
+              return done(null, false);
+            });
           });
-        });
-      })
+        }
+      )
     );
   } catch (error) {
     console.log(error);
   }
-  passport.serializeUser((user: any, done: any) => {
+  passport.serializeUser((user: any, done: Function) => {
     done(null, user.id);
   });
-  passport.deserializeUser((id: string, done: any) => {
+  passport.deserializeUser((id: string, done: Function) => {
     User.findOne({ _id: id }, (err: any, user: IUser) => {
       done(err, user);
     });

@@ -61,7 +61,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [onlineFriends, setOnlineFriends] = useState<IFriend[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<ISocketUser[]>([]);
   const [arrivingMessage, setArrivingMessage] =
-    useState<arrivingMessage | null>(null);
+    useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
 
   const logOut = async () => {
@@ -80,7 +80,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
 
     let onlineFriends: IFriend[] = friends.map((friend) => {
-      if (onlineUsers.find((user: any) => user.userId === friend._id)) {
+      if (onlineUsers.find((user: ISocketUser) => user.userId === friend._id)) {
         return { ...friend, online: true };
       }
       return friend;
@@ -94,7 +94,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     if (!socket || !state.user) {
       return;
     }
-    let onlineStatusTimeout: any;
+    let onlineStatusTimeout: ReturnType<typeof setTimeout>;
 
     socket.emit("newUser", state.user._id);
     socket.on("getUsers", (socketUsers) => {
@@ -136,7 +136,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
           _id: arrivingMessage.messageId,
           senderId: arrivingMessage.senderId,
           text: arrivingMessage.text,
-          createdAt: Date.now(),
+          createdAt: arrivingMessage.createdAt,
         },
       ]);
       return;
@@ -165,6 +165,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     const intervalId = setInterval(() => getMessages(), 60000);
 
     return () => {
+      console.log("clearing");
+
       clearInterval(intervalId);
       document.removeEventListener("mousedown", hideDropDown);
     };
@@ -207,10 +209,13 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [state.user]);
 
   const getMessages = useCallback(async () => {
+    console.log("getting msgs0");
     if (!currentConversation) return;
 
     try {
       const messages = await getMessagesCall(currentConversation._id);
+      console.log("getting msgs");
+
       setMessages(messages);
       setNewMessage("");
     } catch (error) {

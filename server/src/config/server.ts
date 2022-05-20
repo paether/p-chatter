@@ -1,11 +1,18 @@
-import session from "express-session";
+/* eslint-disable no-unused-vars */
+import session, { Session } from "express-session";
 import cookieParser from "cookie-parser";
-import express from "express";
+import express, { NextFunction, Express } from "express";
 import passport from "passport";
 import helmet from "helmet";
-import { createServer } from "http";
+import { createServer, IncomingMessage } from "http";
 import cors from "cors";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
+
+declare module "http" {
+  interface IncomingMessage {
+    session: Session;
+  }
+}
 
 const app = express();
 const server = createServer(app);
@@ -35,14 +42,14 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(passport.initialize());
 app.use(passport.session());
 
-const wrap = (middleware: any) => (socket: any, next: any) =>
+const wrap = (middleware) => (socket: Socket, next: NextFunction) =>
   middleware(socket.request, {}, next);
 
 io.use(wrap(sessionMiddleware));
 io.use(wrap(passport.initialize()));
 io.use(wrap(passport.session()));
 
-io.use((socket: any, next: any) => {
+io.use((socket: any, next: NextFunction) => {
   if (socket.request.user) {
     next();
   } else {

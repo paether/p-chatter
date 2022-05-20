@@ -20,8 +20,11 @@ const PictureModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isPictureUploading, setIsPictureUploading] = useState(false);
 
-  const onFileChange = (e: any) => {
-    setSelectedFile(e.target.files[0]);
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const element = e.target as HTMLInputElement;
+    if (element.files?.length) {
+      setSelectedFile(element.files[0]);
+    }
   };
 
   const handleSubmit = async () => {

@@ -24,11 +24,11 @@ const Profile: React.FC<Props> = ({ logOut }) => {
   const [showDropDown, setShowDropDown] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  const handleClickOutside = (event: any) => {
+  const handleClickOutside = (event: MouseEvent) => {
     if (
       dropwDownRef.current &&
-      !dropwDownRef.current.contains(event.target) &&
-      !profileHeaderRef.current?.contains(event.target)
+      !dropwDownRef.current.contains(event.target as Node) &&
+      !profileHeaderRef.current?.contains(event.target as Node)
     ) {
       setShowDropDown(false);
     }
