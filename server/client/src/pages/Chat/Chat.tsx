@@ -65,10 +65,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
 
-  useEffect(() => {
-    console.table(state.user?.unread);
-  }, [state.user]);
-
   const logOut = async () => {
     try {
       await axiosInstance.post("/auth/logout");
@@ -157,6 +153,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
             createdAt: arrivingMessage.createdAt,
           },
         ]);
+
         setArrivingMessage(null);
         return;
       }
@@ -224,12 +221,20 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         text: newMessage,
       });
 
+      if (
+        !onlineUsers.some((user) => {
+          return user.userId === receiverId;
+        })
+      ) {
+        await putUpdateUnread(receiverId!, state.user!._id, "increment");
+      }
+
       setMessages((prev) => [...prev, postedMessage]);
       setNewMessage("");
     } catch (error) {
       console.log(error);
     }
-  }, [currentConversation, newMessage, socket, state.user]);
+  }, [currentConversation, newMessage, socket, state.user, onlineUsers]);
 
   const getConversations = useCallback(async () => {
     if (state.user) {

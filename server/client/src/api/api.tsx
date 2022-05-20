@@ -113,10 +113,11 @@ export const putAddFriendCall = async (userId: string) => {
 export const putUpdateUnread = async (
   userId: string,
   friendId: string,
-  unreadCount: number
+  unreadCount: number | string
 ) => {
   try {
     await axiosInstance.put(`/users/${userId}/updateunread`, {
+      userId,
       friendId,
       count: unreadCount,
     });

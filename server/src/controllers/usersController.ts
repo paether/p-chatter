@@ -130,19 +130,37 @@ const put_add_friend = async (req: Request, res: Response) => {
   }
 };
 const put_update_unread = async (req: Request, res: Response) => {
-  const validIds = verifyMongoIds([req.user!.id, req.body.friendId]);
+  const validIds = verifyMongoIds([req.body.friendId, req.body.userId]);
   if (!validIds) return res.status(400).json("Invalid values");
 
-  if (!Number.isInteger(req.body.count)) {
+  if (!Number.isInteger(req.body.count) && req.body.count !== "increment") {
     return res.status(403).json("Invalid counter");
   }
   try {
-    const user = await User.findById({ _id: req.user!.id });
+    const user = await User.findById({ _id: req.body.userId });
     if (user) {
-      let data = { ...user.unread, [req.body.friendId]: req.body.count };
+      let data;
+      if (req.body.count !== "increment") {
+        data = { ...user.unread, [req.body.friendId]: req.body.count };
+      } else {
+        if (
+          user.unread[req.body.friendId] &&
+          Number.isInteger(user.unread[req.body.friendId])
+        ) {
+          data = {
+            ...user.unread,
+            [req.body.friendId]: user.unread[req.body.friendId] + 1,
+          };
+        } else {
+          data = {
+            ...user.unread,
+            [req.body.friendId]: 1,
+          };
+        }
+      }
 
       await User.updateOne(
-        { _id: req.user!.id },
+        { _id: req.body.userId },
         {
           $set: {
             unread: data,
