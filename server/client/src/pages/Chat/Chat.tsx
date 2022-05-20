@@ -209,12 +209,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [state.user]);
 
   const getMessages = useCallback(async () => {
-    console.log("getting msgs0");
     if (!currentConversation) return;
 
     try {
       const messages = await getMessagesCall(currentConversation._id);
-      console.log("getting msgs");
 
       setMessages(messages);
       setNewMessage("");
