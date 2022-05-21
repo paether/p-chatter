@@ -57,16 +57,15 @@ const put_add_profilePicture = async (req: Request, res: Response) => {
     );
     const data = qs.stringify({
       grant_type: "refresh_token",
-      refresh_token:
-        "lUGrm_GOGu8AAAAAAAAAAXUKrC3bCcOFKIL3Az8jvWglmtxBG6XpfYKNnQbmrWMZ",
+      refresh_token: process.env.DROPBOX_REFRESH_TOKEN,
     });
     const resp = await axios({
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       url: "https://api.dropboxapi.com/oauth2/token",
       method: "POST",
       auth: {
-        username: "s9sekvxlbqymmqa",
-        password: "hjhqhfecf0kae6n",
+        username: process.env.DROPBOX_USERNAME!,
+        password: process.env.DROPBOX_PASSWORD!,
       },
       data,
     });
