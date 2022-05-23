@@ -65,14 +65,14 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
 
-  const logOut = async () => {
+  const logOut = useCallback(async () => {
     try {
       await axiosInstance.post("/auth/logout");
       dispatch({ type: "LOGOUT_SUCCESS" });
     } catch (error) {
       console.log(error);
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     // a seperate onlinefriends state had to be created to handle both new online users from socketio and new friends added live
@@ -91,17 +91,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [onlineUsers, friends]);
 
   useEffect(() => {
-    //handle socket.io events
     if (!socket || !state.user) {
       return;
     }
+    // load unread messages from server when logged in
     let unreads: { [id: string]: number } = {};
     if (state.user?.unread) {
       Object.keys(state.user?.unread).forEach((key: string) => {
         unreads[key] = state.user?.unread[key]!;
       });
     }
-
+    //store unread messages locally after logging in to speed things up
     setUnreadMsgs((prevState) => ({
       ...prevState,
       ...unreads,
@@ -109,6 +109,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     let onlineStatusTimeout: ReturnType<typeof setTimeout>;
 
     socket.emit("newUser", state.user._id);
+    //debounce users logging in/out in case someone just refreshes his/her page
     socket.on("getUsers", (socketUsers) => {
       clearTimeout(onlineStatusTimeout);
 
@@ -124,12 +125,14 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     async function handleArrivingMessage() {
-      //update UI based on message arriving from socket.io based on which conversation is currently active
+      //update UI based on message arriving from socket.io depending on which conversation is currently active
       if (!arrivingMessage) {
         const unreadFriend = currentConversation?.members.find(
           (member) => member !== state.user?._id
         );
+
         if (
+          //if there are unread messages when selecting that conversation, empty them both locally and on server side
           unreadFriend &&
           unreadMsgs.hasOwnProperty(unreadFriend) &&
           unreadMsgs[unreadFriend] !== 0
@@ -140,9 +143,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
             [unreadFriend]: 0,
           }));
         }
-
         return;
       }
+      //if new message arrives from socketio and the message arriving from is the same as the currently opened conversation then display messages live
       if (currentConversation?.members.includes(arrivingMessage.senderId)) {
         setMessages((prev) => [
           ...prev,
@@ -157,6 +160,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         setArrivingMessage(null);
         return;
       }
+      //if no conversation is switched and the current conversation is not the same as the originating message, then it will be an unread message
+      //then it will be sent to the server as well as to the client
+
       try {
         await putUpdateUnread(
           state.user!._id,
@@ -183,7 +189,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const getFriends = async () => {
     try {
       const friendsResp = await getFriendsCall();
-
       setFriends(friendsResp);
       setOnlineFriends(friendsResp);
     } catch (error) {
@@ -193,7 +198,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
 
   useEffect(() => {
     getFriends();
+    //handle click outside of dropdown
     document.addEventListener("mousedown", hideDropDown);
+    //refersh date on messages while the conversation is open (sent X minutes/hours etc. ago)
     const intervalId = setInterval(() => getMessages(), 60000);
 
     return () => {
@@ -221,6 +228,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         text: newMessage,
       });
 
+      setMessages((prev) => [...prev, postedMessage]);
+      setNewMessage("");
+      //if the receiver is not online then the unread message will be sent to the server only
+      //so when she/he logs in the unread messages will be displayed to them
       if (
         !onlineUsers.some((user) => {
           return user.userId === receiverId;
@@ -228,9 +239,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       ) {
         await putUpdateUnread(receiverId!, state.user!._id, "increment");
       }
-
-      setMessages((prev) => [...prev, postedMessage]);
-      setNewMessage("");
     } catch (error) {
       console.log(error);
     }
@@ -269,6 +277,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [currentConversation, getMessages]);
 
   useEffect(() => {
+    //group recently used conversations together
     if (currentConversation) {
       if (
         currentConversations.some(
@@ -283,6 +292,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, [currentConversation, currentConversations]);
 
   useEffect(() => {
+    //auto scroll to last message when new one arrives
     if (!messagesRef.current) return;
     messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
   }, [messages]);
@@ -292,7 +302,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       setSearchedPeople([]);
       return;
     }
-    //debouncing input to not make requests until user stops typing
+    //debouncing input to not make requests until user stops typing to reduce server overhead
     let filterTimeout = setTimeout(async () => {
       try {
         const users = await getUsersCall(userFilter);
@@ -321,6 +331,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   };
 
   useEffect(() => {
+    //update current conversation when user opens chat from the friend list bar
     if (currentChatPartner) {
       let conversation = conversations.find((conversation) =>
         conversation.members.includes(currentChatPartner._id)
@@ -336,6 +347,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversations, currentChatPartner]);
+
   const handleSearchClicked = () => {
     searchResultRef.current?.classList.add("visible");
     searchContainerRef.current?.classList.add("active");
@@ -353,22 +365,25 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
   };
   const handleOpenChat = async (userId: string) => {
+    //chat opening from friends list bar
     try {
       let conversationExists = conversations.find((conversation) =>
         conversation.members.includes(userId)
       );
+      //if there is no previous conversation with that friend a new one will be created
       if (!conversationExists) {
         await postNewConversationCall(state.user!._id, userId);
         await getConversations();
       }
       let friend = await getFriendCall(userId);
 
+      //empty out unread messages
       await putUpdateUnread(state.user!._id, userId, 0);
-
       setUnreadMsgs((prevState) => ({
         ...prevState,
         [userId]: 0,
       }));
+      //set chat partner which will trigger the current conversation changing useEffect
       setCurrentChatPartner(friend);
     } catch (error: any) {
       console.log(error);
