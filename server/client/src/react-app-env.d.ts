@@ -30,6 +30,7 @@ interface IUser {
   _id: string;
   username: string;
   picture: string;
+  unread: { [id: string]: number };
   updatedAt?: string;
   createdAt?: string;
 }

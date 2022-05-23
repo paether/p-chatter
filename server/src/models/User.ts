@@ -5,6 +5,7 @@ export interface IUser extends mongoose.Document {
   password: string;
   picture: string;
   friends: Array<string>;
+  unread: {};
   updatedAt?: string;
   createdAt?: string;
 }
@@ -27,6 +28,10 @@ const UserSchema: mongoose.Schema = new mongoose.Schema(
     friends: {
       type: Array,
       default: [],
+    },
+    unread: {
+      type: Object,
+      default: {},
     },
   },
   { timestamps: true }

@@ -13,6 +13,16 @@ router.put(
   usersController.put_id_password
 );
 
+//update unread count
+router.put(
+  "/:id/updateunread",
+  checkAuthentication,
+  usersController.put_update_unread
+);
+
+//get unread count
+router.get("/:id/unread", checkAuthentication, usersController.get_unread);
+
 //update profile picture
 router.put(
   "/:id/addpicture",

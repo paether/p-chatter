@@ -110,6 +110,22 @@ export const putAddFriendCall = async (userId: string) => {
     throwError("Get users error", error.response);
   }
 };
+export const putUpdateUnread = async (
+  userId: string,
+  friendId: string,
+  unreadCount: number | string
+) => {
+  try {
+    await axiosInstance.put(`/users/${userId}/updateunread`, {
+      userId,
+      friendId,
+      count: unreadCount,
+    });
+    return;
+  } catch (error: any) {
+    throwError("Update unread error", error.response);
+  }
+};
 
 export const postNewConversationCall = async (
   senderId: string,

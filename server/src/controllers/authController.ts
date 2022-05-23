@@ -13,8 +13,8 @@ const post_login = (req: Request, res: Response, next: NextFunction) => {
       if (!user) return res.status(401).json("Unauthorized");
       req.logIn(user, (err) => {
         if (err) throw err;
-        const { _id, username, picture } = user;
-        return res.json({ _id, username, picture });
+        const { _id, username, picture, unread } = user;
+        return res.json({ _id, username, picture, unread });
       });
       return;
     })(req, res, next);
@@ -65,8 +65,8 @@ const post_register = async (req: Request, res: Response) => {
 
 const get_isloggedin = (req: Request, res: Response) => {
   if (req.isAuthenticated()) {
-    const { _id, username, picture } = req.user;
-    return res.json({ _id, username, picture });
+    const { _id, username, picture, unread } = req.user;
+    return res.json({ _id, username, picture, unread });
   } else {
     return res.json(false);
   }
