@@ -1,12 +1,18 @@
-# Chatter app
-
 My own implementation of a chat application.
 
-## Features
+## Main Features
 
 - Login and Register into the app, using passportjs with express cookie sessions for auth.
 - Search for and add users and friends.
 - Real time chatting with socket.io
+- Notifications of unread messages when user is offline and/or chat is not currently open.
+- Online status of friends displayed.
+
+## Challanges
+
+- The hardest part was handling multiple conversations concurrently while the user is capable of adding new friends and then updating the UI concurrently. Multiple iteration of the that specific codebase was needed as I was adding more and more capabilites to make sure no useless re-renders of the components were happening.
+- The session handling of PassportJS / Express with socket.io to keep users logged in even when the page is refreshed. I had to dig deep into documentations on how to synchronize express-passport-socketio login/logout sessions with cookies which took multiple days.
+- Figuring out the special types/interfaces needed for TypeScript which was cumbersome but very worth it in during testing and when adding new capabilites to the app.
 
 ## Tech stack
 
@@ -18,15 +24,8 @@ My own implementation of a chat application.
 - CSS
 - HTML5
 
-## Challanges
+## Planned future improvements
 
-- The hardest part was about handling multiple conversations concurrently while the user is capable of adding new friends and then updating the UI concurrently
-- The session handling of PassportJS / Express to keep users logged in even when the page is refreshed
-- Figuring out the special types/interfaces needed for TypeScript
-- Since the app uses multiple states which depend on each other the code had to be refactored multiple times to evade useless re-renders of React components
-
-## TODO
-
-- The app is currently optimized for desktop only, mobile version would need lot of collapsable UI elements
-- Handle friends requests based on user input and add a seperate UI for accepting/declining friend requests
-- Create group chats where user can add multiple friends
+- The app is currently optimized for desktop only, mobile version would need an almost new design with lot of collapsable UI elements.
+- Widen friends request functions based on user input and add a seperate UI for accepting/declining the requests.
+- Create group chats where user can add multiple friends.

@@ -56,17 +56,6 @@ export const Login: React.FC = () => {
     }
   };
 
-  const LoadingCircle = () => {
-    return (
-      <div className="loading-ring">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    );
-  };
-
   if (state.isFetching) {
     return <Loading />;
   }
