@@ -3,7 +3,8 @@ import { Login} from "./pages/Login"
 import {render, screen} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import '@testing-library/jest-dom'
-
+//TODO
+//still in development
 test("renders login",async()=>{
    render(<Login/>);
    const usernameEl = screen.getByPlaceholderText(/username/i)
@@ -20,3 +21,4 @@ test("renders login",async()=>{
    expect(usernameEl.value).toBe("test")
 
 })
+//TODO

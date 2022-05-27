@@ -44,7 +44,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const [searchedPeople, setSearchedPeople] = useState<ISearchedPerson[]>([]);
+  const [searchedPeople, setSearchedPeople] = useState<
+    ISearchedPerson[] | string
+  >([]);
   const [conversations, setConversations] = useState<IConversation[]>([]);
   const [currentConversations, setCurrentConversations] = useState<
     IConversation[]
@@ -306,6 +308,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     let filterTimeout = setTimeout(async () => {
       try {
         const users = await getUsersCall(userFilter);
+
+        if (users.length === 0) {
+          setSearchedPeople("No search result");
+          return;
+        }
         setSearchedPeople(users);
       } catch (error) {
         console.log(error);
@@ -418,17 +425,21 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
             />
           </div>
           <ul className="search-result-container" ref={searchResultRef}>
-            {searchedPeople.map((person) => {
-              return (
-                <li key={person._id} className="search-result">
-                  <div className="username">{person.username}</div>
-                  <FontAwesomeIcon
-                    onClick={() => addFriend(person._id)}
-                    icon={faUserPlus}
-                  />
-                </li>
-              );
-            })}
+            {Array.isArray(searchedPeople) ? (
+              searchedPeople.map((person) => {
+                return (
+                  <li key={person._id} className="search-result">
+                    <div className="username">{person.username}</div>
+                    <FontAwesomeIcon
+                      onClick={() => addFriend(person._id)}
+                      icon={faUserPlus}
+                    />
+                  </li>
+                );
+              })
+            ) : (
+              <li className="search-result">{searchedPeople + "."}</li>
+            )}
           </ul>
         </div>
         <div className="people-list-header">Chats</div>
