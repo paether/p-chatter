@@ -66,6 +66,8 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [arrivingMessage, setArrivingMessage] =
     useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
+  const [isTyping, setIsTyping] = useState(false);
+  const [arrivingTyper, setArrivingTyper] = useState("");
 
   const logOut = useCallback(async () => {
     try {
@@ -121,9 +123,25 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     });
 
     socket.on("getMessage", (msg) => setArrivingMessage(msg));
-
+    socket.on("typing", (senderId) => setArrivingTyper(senderId));
     socket.on("getFriends", getFriends);
   }, [state.user, socket]);
+
+  useEffect(() => {
+    let typingTimeout: ReturnType<typeof setTimeout>;
+    if (arrivingTyper === currentChatPartner?._id) {
+      setIsTyping(true);
+      typingTimeout = setTimeout(() => {
+        setIsTyping(false);
+        setArrivingTyper("");
+      }, 2000);
+    } else {
+      setArrivingTyper("");
+      setIsTyping(false);
+    }
+
+    return () => clearTimeout(typingTimeout);
+  }, [arrivingTyper, currentChatPartner]);
 
   useEffect(() => {
     async function handleArrivingMessage() {
@@ -213,19 +231,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, []);
 
   const handleSendNewMessage = useCallback(async () => {
-    if (!currentConversation || newMessage.length === 0) return;
+    if (!currentConversation || newMessage.length === 0 || !currentChatPartner)
+      return;
     try {
       const postedMessage = await postNewMessageCall(
         currentConversation._id!,
         newMessage
       );
-      const receiverId = currentConversation.members.find(
-        (member) => member !== state.user!._id
-      );
 
       socket?.emit("sendMessage", {
         senderId: state.user?._id,
-        receiverId,
+        receiverId: currentChatPartner._id,
         messageId: postedMessage._id,
         text: newMessage,
       });
@@ -236,15 +252,26 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       //so when she/he logs in the unread messages will be displayed to them
       if (
         !onlineUsers.some((user) => {
-          return user.userId === receiverId;
+          return user.userId === currentChatPartner._id;
         })
       ) {
-        await putUpdateUnread(receiverId!, state.user!._id, "increment");
+        await putUpdateUnread(
+          currentChatPartner._id!,
+          state.user!._id,
+          "increment"
+        );
       }
     } catch (error) {
       console.log(error);
     }
-  }, [currentConversation, newMessage, socket, state.user, onlineUsers]);
+  }, [
+    currentConversation,
+    newMessage,
+    socket,
+    state.user,
+    onlineUsers,
+    currentChatPartner,
+  ]);
 
   const getConversations = useCallback(async () => {
     if (state.user) {
@@ -397,6 +424,18 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
   };
 
+  const handleTyping = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (!currentConversation) return;
+
+    if (currentChatPartner) {
+      socket?.emit("typing", {
+        senderId: state.user?._id,
+        receiverId: currentChatPartner._id,
+      });
+    }
+    setNewMessage(e.target.value);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -526,14 +565,16 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               </div>
             )}
           </div>
-
+          {isTyping && (
+            <div>{currentChatPartner!.username + " is typing..."}</div>
+          )}
           <div className="chat-message ">
             <textarea
               onKeyDown={handleEnterButton}
               name="message-to-send"
               placeholder="Type your message..."
               rows={3}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => handleTyping(e)}
               value={newMessage}
             ></textarea>
 
