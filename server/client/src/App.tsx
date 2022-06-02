@@ -4,11 +4,11 @@ import { io, Socket } from "socket.io-client";
 
 import { axiosInstance } from "./api";
 import { AuthContext } from "./context/AuthContext";
-import AnimatedRoutes from "./components/AnimatedRoutes/AnimatedRoutes";
+import AnimatedRoutes from "./components/AnimatedRoutes";
 import { Loading } from "./components/Loading";
 import "./App.css";
 
-function App() {
+function App(): JSX.Element {
   const { state, dispatch } = useContext(AuthContext);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
