@@ -17,6 +17,7 @@
     "axios": "^0.26.1",
     "classnames": "^2.3.1",
     "framer-motion": "^6.3.3",
+    "lodash": "^4.17.21",
     "moment": "^2.29.3",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
@@ -51,6 +52,7 @@
   },
   "devDependencies": {
     "@testing-library/react": "^13.2.0",
+    "@types/lodash": "^4.14.182",
     "web-vitals": "^2.1.4"
   }
 }

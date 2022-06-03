@@ -38,6 +38,18 @@ module.exports = (io: Server) => {
     });
   };
 
+  const handleTyping = function (
+    senderId: string,
+    receiverId: string,
+    socketUsers: ISocketUser[]
+  ) {
+    const receiver = getSocketUser(receiverId, socketUsers);
+
+    if (!receiver) return;
+
+    io.to(receiver.socketId).emit("typing", { id: senderId });
+  };
+
   const handleAddFriend = function (
     friendId: string,
     socketUsers: ISocketUser[]
@@ -61,5 +73,6 @@ module.exports = (io: Server) => {
     handleSendMessage,
     handleDisconnect,
     handleAddFriend,
+    handleTyping,
   };
 };

@@ -13,8 +13,13 @@ import usersRouter from "./src/routes/users";
 import authRouter from "./src/routes/auth";
 import chatRouter from "./src/routes/chat";
 
-const { handleNewUser, handleSendMessage, handleDisconnect, handleAddFriend } =
-  require("./src/socketioHandlers")(io);
+const {
+  handleNewUser,
+  handleSendMessage,
+  handleDisconnect,
+  handleAddFriend,
+  handleTyping,
+} = require("./src/socketioHandlers")(io);
 
 const PORT = getConfig().PORT;
 let socketUsers: ISocketUser[] = [];
@@ -47,6 +52,12 @@ io.on("connection", (socket) => {
     "sendMessage",
     ({ senderId, receiverId, messageId, text }: ISendMessage) =>
       handleSendMessage(senderId, receiverId, messageId, text, socketUsers)
+  );
+  socket.on(
+    "typing",
+    ({ senderId, receiverId }: { senderId: string; receiverId: string }) => {
+      handleTyping(senderId, receiverId, socketUsers);
+    }
   );
 
   socket.on(

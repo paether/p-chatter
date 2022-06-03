@@ -43,6 +43,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const searchResultRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const friendTypingRef = useRef<HTMLDivElement>(null);
 
   const [searchedPeople, setSearchedPeople] = useState<
     ISearchedPerson[] | string
@@ -66,6 +67,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [arrivingMessage, setArrivingMessage] =
     useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
+  const [isTyping, setIsTyping] = useState(false);
+  const [arrivingTyper, setArrivingTyper] = useState<IArrivingTpyer>({
+    id: "",
+  });
 
   const logOut = useCallback(async () => {
     try {
@@ -121,7 +126,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     });
 
     socket.on("getMessage", (msg) => setArrivingMessage(msg));
-
+    socket.on("typing", (sender) => {
+      setArrivingTyper(sender);
+    });
     socket.on("getFriends", getFriends);
   }, [state.user, socket]);
 
@@ -213,19 +220,17 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   }, []);
 
   const handleSendNewMessage = useCallback(async () => {
-    if (!currentConversation || newMessage.length === 0) return;
+    if (!currentConversation || newMessage.length === 0 || !currentChatPartner)
+      return;
     try {
       const postedMessage = await postNewMessageCall(
         currentConversation._id!,
         newMessage
       );
-      const receiverId = currentConversation.members.find(
-        (member) => member !== state.user!._id
-      );
 
       socket?.emit("sendMessage", {
         senderId: state.user?._id,
-        receiverId,
+        receiverId: currentChatPartner._id,
         messageId: postedMessage._id,
         text: newMessage,
       });
@@ -236,15 +241,26 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
       //so when she/he logs in the unread messages will be displayed to them
       if (
         !onlineUsers.some((user) => {
-          return user.userId === receiverId;
+          return user.userId === currentChatPartner._id;
         })
       ) {
-        await putUpdateUnread(receiverId!, state.user!._id, "increment");
+        await putUpdateUnread(
+          currentChatPartner._id!,
+          state.user!._id,
+          "increment"
+        );
       }
     } catch (error) {
       console.log(error);
     }
-  }, [currentConversation, newMessage, socket, state.user, onlineUsers]);
+  }, [
+    currentConversation,
+    newMessage,
+    socket,
+    state.user,
+    onlineUsers,
+    currentChatPartner,
+  ]);
 
   const getConversations = useCallback(async () => {
     if (state.user) {
@@ -397,6 +413,40 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     }
   };
 
+  const handleTyping = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (!currentConversation) return;
+
+    if (currentChatPartner) {
+      socket?.emit("typing", {
+        senderId: state.user?._id,
+        receiverId: currentChatPartner._id,
+      });
+    }
+
+    setNewMessage(e.target.value);
+  };
+  useEffect(() => {
+    if (!friendTypingRef.current) {
+      return;
+    }
+    let typingTimeout: ReturnType<typeof setTimeout>;
+
+    if (arrivingTyper.id === currentChatPartner?._id) {
+      setIsTyping(true);
+      friendTypingRef.current.style.visibility = "visible";
+      typingTimeout = setTimeout(() => {
+        setIsTyping(false);
+        setArrivingTyper({ id: "" });
+        friendTypingRef.current!.style.visibility = "hidden";
+      }, 2000);
+    } else if (isTyping) {
+      setIsTyping(false);
+      setArrivingTyper({ id: "" });
+      friendTypingRef.current!.style.visibility = "hidden";
+    }
+
+    return () => clearTimeout(typingTimeout);
+  }, [arrivingTyper, currentChatPartner, isTyping]);
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -491,6 +541,14 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               <div className="chat-with">
                 Chat with <span> {currentChatPartner?.username}</span>
               </div>
+              <div ref={friendTypingRef} className="friendTyping">
+                {currentChatPartner!.username + " is typing"}
+                <div className="dot-typing">
+                  <div className="dot1"></div>
+                  <div className="dot2"></div>
+                  <div className="dot3"></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -533,7 +591,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               name="message-to-send"
               placeholder="Type your message..."
               rows={3}
-              onChange={(e) => setNewMessage(e.target.value)}
+              onChange={(e) => handleTyping(e)}
               value={newMessage}
             ></textarea>
 
