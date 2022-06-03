@@ -67,7 +67,6 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const [arrivingMessage, setArrivingMessage] =
     useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
-  const [isTyping, setIsTyping] = useState(false);
   const [arrivingTyper, setArrivingTyper] = useState<IArrivingTpyer>({
     id: "",
   });
@@ -165,6 +164,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
             createdAt: arrivingMessage.createdAt,
           },
         ]);
+        if (friendTypingRef.current) {
+          friendTypingRef.current.style.visibility = "hidden";
+        }
 
         setArrivingMessage(null);
         return;
@@ -357,9 +359,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     //update current conversation when user opens chat from the friend list bar
     if (currentChatPartner) {
       //reset typing
-      if (isTyping) {
-        setIsTyping(false);
-        friendTypingRef.current!.style.visibility = "hidden";
+      // if (arrivingTyper.id !== "") {
+      //   setArrivingTyper({ id: "" });
+      // }
+      if (friendTypingRef.current) {
+        friendTypingRef.current.style.visibility = "hidden";
       }
 
       let conversation = conversations.find((conversation) =>
@@ -438,17 +442,14 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     let typingTimeout: ReturnType<typeof setTimeout>;
 
     if (arrivingTyper.id === currentChatPartner?._id) {
-      setIsTyping(true);
       friendTypingRef.current.style.visibility = "visible";
       typingTimeout = setTimeout(() => {
-        setIsTyping(false);
-        setArrivingTyper({ id: "" });
         friendTypingRef.current!.style.visibility = "hidden";
       }, 2000);
     }
 
     return () => clearTimeout(typingTimeout);
-  }, [arrivingTyper, isTyping]);
+  }, [arrivingTyper]);
   return (
     <motion.div
       initial={{ opacity: 0 }}
