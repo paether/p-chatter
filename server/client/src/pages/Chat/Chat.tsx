@@ -43,6 +43,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   const searchResultRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const friendTypingRef = useRef<HTMLDivElement>(null);
 
   const [searchedPeople, setSearchedPeople] = useState<
     ISearchedPerson[] | string
@@ -67,7 +68,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     useState<IArrivingMessage | null>(null);
   const [unreadMsgs, setUnreadMsgs] = useState<IUnreadMsg>({});
   const [isTyping, setIsTyping] = useState(false);
-  const [arrivingTyper, setArrivingTyper] = useState("");
+  const [arrivingTyper, setArrivingTyper] = useState<IArrivingTpyer>({
+    id: "",
+  });
 
   const logOut = useCallback(async () => {
     try {
@@ -123,25 +126,11 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
     });
 
     socket.on("getMessage", (msg) => setArrivingMessage(msg));
-    socket.on("typing", (senderId) => setArrivingTyper(senderId));
+    socket.on("typing", (sender) => {
+      setArrivingTyper(sender);
+    });
     socket.on("getFriends", getFriends);
   }, [state.user, socket]);
-
-  useEffect(() => {
-    let typingTimeout: ReturnType<typeof setTimeout>;
-    if (arrivingTyper === currentChatPartner?._id) {
-      setIsTyping(true);
-      typingTimeout = setTimeout(() => {
-        setIsTyping(false);
-        setArrivingTyper("");
-      }, 2000);
-    } else {
-      setArrivingTyper("");
-      setIsTyping(false);
-    }
-
-    return () => clearTimeout(typingTimeout);
-  }, [arrivingTyper, currentChatPartner]);
 
   useEffect(() => {
     async function handleArrivingMessage() {
@@ -433,9 +422,31 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         receiverId: currentChatPartner._id,
       });
     }
+
     setNewMessage(e.target.value);
   };
+  useEffect(() => {
+    if (!friendTypingRef.current) {
+      return;
+    }
+    let typingTimeout: ReturnType<typeof setTimeout>;
 
+    if (arrivingTyper.id === currentChatPartner?._id) {
+      setIsTyping(true);
+      friendTypingRef.current.style.visibility = "visible";
+      typingTimeout = setTimeout(() => {
+        setIsTyping(false);
+        setArrivingTyper({ id: "" });
+        friendTypingRef.current!.style.visibility = "hidden";
+      }, 2000);
+    } else if (isTyping) {
+      setIsTyping(false);
+      setArrivingTyper({ id: "" });
+      friendTypingRef.current!.style.visibility = "hidden";
+    }
+
+    return () => clearTimeout(typingTimeout);
+  }, [arrivingTyper, currentChatPartner, isTyping]);
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -530,6 +541,14 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               <div className="chat-with">
                 Chat with <span> {currentChatPartner?.username}</span>
               </div>
+              <div ref={friendTypingRef} className="friendTyping">
+                {currentChatPartner!.username + " is typing"}
+                <div className="dot-typing">
+                  <div className="dot1"></div>
+                  <div className="dot2"></div>
+                  <div className="dot3"></div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -565,9 +584,7 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               </div>
             )}
           </div>
-          {isTyping && (
-            <div>{currentChatPartner!.username + " is typing..."}</div>
-          )}
+
           <div className="chat-message ">
             <textarea
               onKeyDown={handleEnterButton}

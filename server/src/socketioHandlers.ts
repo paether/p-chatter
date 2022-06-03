@@ -47,7 +47,7 @@ module.exports = (io: Server) => {
 
     if (!receiver) return;
 
-    io.to(receiver.socketId).emit("typing", senderId);
+    io.to(receiver.socketId).emit("typing", { id: senderId });
   };
 
   const handleAddFriend = function (

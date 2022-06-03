@@ -7,6 +7,10 @@ interface ISocketUser {
 interface IUnreadMsg {
   [id: string]: number;
 }
+
+interface IArrivingTpyer {
+  id: string;
+}
 interface IFriend {
   _id: string;
   username: string;

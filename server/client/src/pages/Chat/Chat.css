@@ -376,3 +376,57 @@
   align-items: center;
   justify-content: center;
 }
+.friendTyping {
+  width: 100%;
+  visibility: hidden;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+.dot-collision {
+  position: relative;
+  margin-left: 20px;
+  margin-bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 5px;
+  background-color: white;
+  color: white;
+  animation: dotCollisionAfter 2s infinite ease-in;
+  animation-delay: 1s;
+}
+.dot-typing {
+  margin-left: 5px;
+  display: flex;
+  gap: 5px;
+}
+.dot1,
+.dot2,
+.dot3 {
+  width: 5px;
+  height: 5px;
+  margin-bottom: 3px;
+
+  background-color: white;
+  color: white;
+  border-radius: 5px;
+  opacity: 0;
+  animation-fill-mode: forwards;
+  animation: flicker 1.5s infinite ease-in;
+}
+
+.dot2 {
+  animation-delay: 2s;
+}
+.dot3 {
+  animation-delay: 5.5s;
+}
+
+@keyframes flicker {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
