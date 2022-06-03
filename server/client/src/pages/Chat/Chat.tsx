@@ -356,6 +356,12 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
   useEffect(() => {
     //update current conversation when user opens chat from the friend list bar
     if (currentChatPartner) {
+      //reset typing
+      if (isTyping) {
+        setIsTyping(false);
+        friendTypingRef.current!.style.visibility = "hidden";
+      }
+
       let conversation = conversations.find((conversation) =>
         conversation.members.includes(currentChatPartner._id)
       );
@@ -439,14 +445,10 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
         setArrivingTyper({ id: "" });
         friendTypingRef.current!.style.visibility = "hidden";
       }, 2000);
-    } else if (isTyping) {
-      setIsTyping(false);
-      setArrivingTyper({ id: "" });
-      friendTypingRef.current!.style.visibility = "hidden";
     }
 
     return () => clearTimeout(typingTimeout);
-  }, [arrivingTyper, currentChatPartner, isTyping]);
+  }, [arrivingTyper, isTyping]);
   return (
     <motion.div
       initial={{ opacity: 0 }}
