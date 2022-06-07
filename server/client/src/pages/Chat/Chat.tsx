@@ -12,6 +12,8 @@ import {
   faSearch,
   faUser,
   faUserPlus,
+  faUsers,
+  faComments,
 } from "@fortawesome/free-solid-svg-icons";
 import { Socket } from "socket.io-client";
 
@@ -600,12 +602,89 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               value={newMessage}
             ></textarea>
             <div className="chat-message-bottom">
-              <div className="profile-header ">
-                {state.user!.picture ? (
-                  <img src={state.user!.picture} alt="" />
-                ) : (
-                  <FontAwesomeIcon icon={faUser} />
-                )}
+              <FontAwesomeIcon icon={faUsers} />
+              <FontAwesomeIcon icon={faComments} />
+              <div className="people-list-backdrop"></div>
+              <div className="people-list-container" id="people-list">
+                <div className="search" ref={searchRef}>
+                  <div className="search-container" ref={searchContainerRef}>
+                    <input
+                      type="text"
+                      placeholder="search"
+                      className="search-input"
+                      onFocus={() => handleSearchClicked()}
+                      ref={searchInputRef}
+                      onChange={(e) => setUserFilter(e.target.value)}
+                    />
+                    <FontAwesomeIcon
+                      icon={faSearch}
+                      onClick={() => {
+                        searchInputRef.current?.setSelectionRange(0, 0);
+                        searchInputRef.current?.focus();
+                      }}
+                    />
+                  </div>
+                  <ul className="search-result-container" ref={searchResultRef}>
+                    {Array.isArray(searchedPeople) ? (
+                      searchedPeople.map((person) => {
+                        return (
+                          <li key={person._id} className="search-result">
+                            <div className="username">{person.username}</div>
+                            <FontAwesomeIcon
+                              onClick={() => addFriend(person._id)}
+                              icon={faUserPlus}
+                            />
+                          </li>
+                        );
+                      })
+                    ) : (
+                      <li className="search-result">{searchedPeople + "."}</li>
+                    )}
+                  </ul>
+                </div>
+                <div className="people-list-header">Chats</div>
+                <div className="people-list-switcher">
+                  <div
+                    onClick={() =>
+                      setIsCurrentConverations(!isCurrentConversations)
+                    }
+                    className={
+                      isCurrentConversations ? "all-chat" : "all-chat active"
+                    }
+                  >
+                    All
+                  </div>
+                  <div
+                    onClick={() =>
+                      setIsCurrentConverations(!isCurrentConversations)
+                    }
+                    className={
+                      !isCurrentConversations
+                        ? "current-chat"
+                        : "current-chat active"
+                    }
+                  >
+                    Current
+                  </div>
+                </div>
+                <ul className="people-list">
+                  {conversations && conversations.length > 0 ? (
+                    <Conversation
+                      onlineFriends={onlineFriends}
+                      conversations={
+                        isCurrentConversations
+                          ? currentConversations
+                          : conversations
+                      }
+                      userId={state.user!._id}
+                      currentConversation={currentConversation}
+                      setCurrentConversation={setCurrentConversation}
+                      setCurrentChatPartner={setCurrentChatPartner}
+                    />
+                  ) : (
+                    "no conversations"
+                  )}
+                </ul>
               </div>
               <button onClick={handleSendNewMessage}>Send</button>
             </div>

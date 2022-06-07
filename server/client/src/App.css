@@ -104,6 +104,32 @@ html {
     border: #f0a202 3px solid;
     color: #f0a202;
   }
+  .chat-message-bottom {
+    display: flex;
+    position: relative;
+    width: 100%;
+  }
+  .chat-message-bottom .people-list-container {
+    display: flex;
+    position: fixed;
+
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: red;
+    overflow-y: scroll;
+
+    z-index: 4;
+  }
+  .people-list-backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+  }
 }
 
 @media (max-width: 400px) {

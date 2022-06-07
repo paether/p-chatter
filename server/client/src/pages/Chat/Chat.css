@@ -431,11 +431,20 @@
   }
 }
 .chat-message-bottom {
-  display: flex;
+  padding: 0 0 0 10px;
+  display: none;
+  gap: 20px;
   width: 100%;
 }
 .chat-message-bottom button {
   margin-left: auto;
+}
+.chat-message-bottom .fa-users,
+.chat-message-bottom .fa-comments {
+  width: 30px;
+  height: 30px;
+}
+.chat-message-bottom .people-list-container {
 }
 .mobile-profile-picture {
   display: none;
