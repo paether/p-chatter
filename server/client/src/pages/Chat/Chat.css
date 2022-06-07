@@ -215,7 +215,6 @@
   overflow-y: scroll;
   overscroll-behavior: contain;
 
-  min-height: 200px;
   flex-grow: 1;
   width: 100%;
 }
@@ -313,6 +312,7 @@
 .chat-container .chat-message textarea {
   width: 100%;
   border: none;
+  height: 64px;
   padding: 10px 20px;
   font: 14px/22px "Lato", Arial, sans-serif;
   margin-bottom: 10px;
@@ -429,4 +429,14 @@
   100% {
     opacity: 1;
   }
+}
+.chat-message-bottom {
+  display: flex;
+  width: 100%;
+}
+.chat-message-bottom button {
+  margin-left: auto;
+}
+.mobile-profile-picture {
+  display: none;
 }

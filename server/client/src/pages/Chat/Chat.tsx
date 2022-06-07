@@ -553,6 +553,9 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
                 </div>
               </div>
             </div>
+            <div className="mobile-profile-picture">
+              <Profile logOut={logOut} />
+            </div>
           </div>
 
           <div className="chat-history" ref={messagesRef}>
@@ -593,12 +596,19 @@ export const Chat = ({ socket }: { socket: Socket | null }) => {
               onKeyDown={handleEnterButton}
               name="message-to-send"
               placeholder="Type your message..."
-              rows={3}
               onChange={(e) => handleTyping(e)}
               value={newMessage}
             ></textarea>
-
-            <button onClick={handleSendNewMessage}>Send</button>
+            <div className="chat-message-bottom">
+              <div className="profile-header ">
+                {state.user!.picture ? (
+                  <img src={state.user!.picture} alt="" />
+                ) : (
+                  <FontAwesomeIcon icon={faUser} />
+                )}
+              </div>
+              <button onClick={handleSendNewMessage}>Send</button>
+            </div>
           </div>
         </div>
       ) : (
